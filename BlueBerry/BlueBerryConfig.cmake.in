@@ -13,7 +13,7 @@ find_package(mbilog REQUIRED)
 
 find_package(Poco REQUIRED)
 
-set(DOXYGEN_EXECUTABLE "@DOXYGEN_EXECUTABLE@")
+set(DOXYGEN_EXECUTABLE "@DOXYGEN_EXECUTABLE@" CACHE FILEPATH "Doxygen executable")
 set(DOXYGEN_DOT_EXECUTABLE "@DOXYGEN_DOT_EXECUTABLE@")
 
 find_package(Doxygen)
