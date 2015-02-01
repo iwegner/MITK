@@ -14,7 +14,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-#include <mitkBaseDataIOFactory.h>
 #include <metaCommand.h>
 #include "mitkCommandLineParser.h"
 #include <usAny.h>
@@ -32,13 +31,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 int main(int argc, char* argv[])
 {
-    std::cout << "FiberExtraction";
     mitkCommandLineParser parser;
 
     parser.setTitle("Fiber Extraction");
     parser.setCategory("Fiber Tracking and Processing Methods");
     parser.setContributor("MBI");
-    parser.setDescription("");
+    parser.setDescription(" ");
 
     parser.setArgumentPrefix("--", "-");
     parser.addArgument("input", "i", mitkCommandLineParser::String, "Input:", "input tractogram (.fib/.trk)", us::Any(), false);

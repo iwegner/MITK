@@ -18,7 +18,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkITKImageImport.h>
 #include <mitkProperties.h>
 #include <mitkImage.h>
-#include <mitkBaseDataIOFactory.h>
 #include <mitkIOUtil.h>
 #include <mitkFiberBundleX.h>
 #include <mitkFiberfoxParameters.h>
@@ -40,6 +39,10 @@ using namespace mitk;
 int main(int argc, char* argv[])
 {
     mitkCommandLineParser parser;
+    parser.setTitle("FiberFox");
+    parser.setCategory("Fiber Tracking and Processing Methods");
+    parser.setContributor("MBI");
+    parser.setDescription(" ");
     parser.setArgumentPrefix("--", "-");
     parser.addArgument("out", "o", mitkCommandLineParser::OutputFile, "Output root:", "output root", us::Any(), false);
     parser.addArgument("parameters", "p", mitkCommandLineParser::InputFile, "Parameter file:", "fiberfox parameter file", us::Any(), false);
