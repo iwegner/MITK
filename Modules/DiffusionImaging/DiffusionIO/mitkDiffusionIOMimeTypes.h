@@ -28,7 +28,7 @@ class DiffusionIOMimeTypes
 {
 public:
 
-  class MitkDiffusionIO_EXPORT DiffusionImageNrrdMimeType : public CustomMimeType
+  class MITKDIFFUSIONIO_EXPORT DiffusionImageNrrdMimeType : public CustomMimeType
   {
   public:
     DiffusionImageNrrdMimeType();
@@ -36,7 +36,7 @@ public:
     virtual DiffusionImageNrrdMimeType* Clone() const;
   };
 
-  class MitkDiffusionIO_EXPORT DiffusionImageNiftiMimeType : public CustomMimeType
+  class MITKDIFFUSIONIO_EXPORT DiffusionImageNiftiMimeType : public CustomMimeType
   {
   public:
     DiffusionImageNiftiMimeType();
@@ -48,11 +48,16 @@ public:
 
   // ------------------------------ VTK formats ----------------------------------
 
-  static CustomMimeType FIBERBUNDLE_MIMETYPE(); // fib
-
-  static std::string FIBERBUNDLE_MIMETYPE_NAME();
+  static CustomMimeType FIBERBUNDLE_VTK_MIMETYPE();
+  static std::string FIBERBUNDLE_VTK_MIMETYPE_NAME();
 
   static std::string FIBERBUNDLE_MIMETYPE_DESCRIPTION();
+
+  // ------------------------------ TrackVis formats ----------------------------------
+
+  static CustomMimeType FIBERBUNDLE_TRK_MIMETYPE();
+  static std::string FIBERBUNDLE_TRK_MIMETYPE_NAME();
+
 
   // ------------------------- Image formats (ITK based) --------------------------
 
