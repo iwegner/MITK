@@ -185,8 +185,13 @@ mark_as_advanced(MITK_BUILD_ALL_APPS
 # -----------------------------------------
 # Qt version related variables
 
-set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
-env_option(MITK_USE_QT "Use Nokia's Qt library" ON)
+if(APPLE)
+  set(DESIRED_QT_VERSION 4 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+else()
+  set(DESIRED_QT_VERSION 5 CACHE STRING "Pick a version of Qt to use: 4 or 5")
+endif()
+
+env_option(MITK_USE_QT "Use the Qt Company's Qt library" ON)
 set(MITK_DESIRED_QT_VERSION ${DESIRED_QT_VERSION})
 
 if(MITK_USE_QT)
@@ -201,8 +206,7 @@ if(MITK_USE_QT)
     set(MITK_QT5_MINIMUM_VERSION 5.0.0)
     set(MITK_USE_Qt4 FALSE)
     set(MITK_USE_Qt5 TRUE)
-    set(QT5_INSTALL_PREFIX "" CACHE PATH "The install location of Qt5")
-    set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT5_INSTALL_PREFIX})
+    set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH}" CACHE PATH "")
     set(MITK_QT5_COMPONENTS Concurrent OpenGL PrintSupport Script Sql Svg WebKitWidgets Xml XmlPatterns UiTools)
     find_package(Qt5 ${MITK_QT5_MINIMUM_VERSION} COMPONENTS ${MITK_QT5_COMPONENTS} REQUIRED)
   endif()
