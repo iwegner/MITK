@@ -335,14 +335,14 @@ void QmitkStdMultiWidget::InitializeWidget()
 
   // setup the department logo rendering
   m_LogoRendering = mitk::LogoOverlay::New();
-  mitk::BaseRenderer::Pointer renderer4 = mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow());
-  m_LogoRendering->SetOpacity(0.5);
-  mitk::Point2D offset;
-  offset.Fill(0.03);
-  m_LogoRendering->SetOffsetVector(offset);
-  m_LogoRendering->SetRelativeSize(0.15);
-  m_LogoRendering->SetCornerPosition(1);
-  renderer4->GetOverlayManager()->AddOverlay(m_LogoRendering.GetPointer(),renderer4);
+  //mitk::BaseRenderer::Pointer renderer4 = mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow());
+  //m_LogoRendering->SetOpacity(0.5);
+  //mitk::Point2D offset;
+  //offset.Fill(0.03);
+  //m_LogoRendering->SetOffsetVector(offset);
+  //m_LogoRendering->SetRelativeSize(0.15);
+  //m_LogoRendering->SetCornerPosition(1);
+  //renderer4->GetOverlayManager()->AddOverlay(m_LogoRendering.GetPointer(),renderer4);
 
   // setup gradient background and renderwindow rectangle frame
   for(unsigned int i = 0; i < 4; ++i)
@@ -1813,11 +1813,13 @@ void QmitkStdMultiWidget::DisableGradientBackground()
 void QmitkStdMultiWidget::EnableDepartmentLogo()
 {
   m_LogoRendering->SetVisibility(true);
+  m_LogoRendering->Update(mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow()));
 }
 
 void QmitkStdMultiWidget::DisableDepartmentLogo()
 {
   m_LogoRendering->SetVisibility(false);
+  m_LogoRendering->Update(mitk::BaseRenderer::GetInstance(mitkWidget4->GetRenderWindow()));
 }
 
 bool QmitkStdMultiWidget::IsDepartmentLogoEnabled() const
