@@ -21,6 +21,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <MitkCoreExports.h>
 #include <itkEventObject.h>
 
+#include <mitkCommon.h>
+
 namespace mitk {
 typedef int OperationType ;
 
@@ -31,6 +33,8 @@ typedef int OperationType ;
 class MITKCORE_EXPORT Operation
 {
 public:
+  mitkClassMacroNoParent(Operation)
+
   //##Documentation
   //## Constructor
   Operation(OperationType operationType);
@@ -48,13 +52,13 @@ class MITKCORE_EXPORT OperationEndEvent : public itk::EndEvent
 public:
   typedef OperationEndEvent Self;
   typedef itk::EndEvent Superclass;
-  OperationEndEvent(Operation* operation = NULL) :
+  OperationEndEvent(Operation* operation = nullptr) :
     m_Operation(operation) {}
   virtual ~OperationEndEvent() {}
-  virtual const char * GetEventName() const { return "OperationEndEvent"; }
-  virtual bool CheckEvent(const ::itk::EventObject* e) const
+  virtual const char * GetEventName() const override { return "OperationEndEvent"; }
+  virtual bool CheckEvent(const ::itk::EventObject* e) const override
     { return dynamic_cast<const Self*>(e); }
-  virtual ::itk::EventObject* MakeObject() const
+  virtual ::itk::EventObject* MakeObject() const override
     { return new Self(m_Operation); }
   Operation* GetOperation() const { return m_Operation; }
 private:

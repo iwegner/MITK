@@ -51,10 +51,11 @@ set(MODULE_TESTS
    mitkTrackingDeviceSourceConfiguratorTest.cpp
    mitkNavigationDataEvaluationFilterTest.cpp
    mitkTrackingTypesTest.cpp
+   mitkOpenIGTLinkTrackingDeviceTest.cpp
    # ------------------ Navigation Tool Management Tests -------------------
    mitkNavigationToolStorageTest.cpp
    mitkNavigationToolTest.cpp
-   mitkNavigationToolReaderAndWriterTest.cpp
+   #mitkNavigationToolReaderAndWriterTest.cpp #deactivated because of bug 18835
    # -----------------------------------------------------------------------
 )
 

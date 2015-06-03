@@ -8,7 +8,7 @@ else()
   mitkFunctionCheckCAndCXXCompilerFlags("-Wno-error=deprecated-declarations" CMAKE_C_FLAGS CMAKE_CXX_FLAGS)
 endif()
 
-MITK_CREATE_MODULE_TESTS(US_MODULE)
+MITK_CREATE_MODULE_TESTS()
 if(TARGET ${TESTDRIVER})
   mitk_use_modules(TARGET ${TESTDRIVER} PACKAGES ITK|ITKThresholding+ITKTestKernel VTK|vtkTestingRendering tinyxml)
 
@@ -87,6 +87,10 @@ if(TARGET ${TESTDRIVER})
                           ${MITK_DATA_DIR}/Pic2DplusT.nrrd
   )
 
+  mitkAddCustomModuleTest(mitkRotatedSlice4DTest mitkRotatedSlice4DTest
+                          ${MITK_DATA_DIR}/UltrasoundImages/4D_TEE_Data_MV.dcm
+  )
+
   if(MITK_ENABLE_RENDERING_TESTING) ### since the rendering test's do not run in ubuntu, yet, we build them only for other systems or if the user explicitly sets the variable MITK_ENABLE_RENDERING_TESTING
     mitkAddCustomModuleTest(mitkImageVtkMapper2D_rgbaImage640x480 mitkImageVtkMapper2DTest
                             ${MITK_DATA_DIR}/RenderingTestData/rgbaImage.png #input image to load in data storage
@@ -128,10 +132,14 @@ if(TARGET ${TESTDRIVER})
                              ${MITK_DATA_DIR}/RenderingTestData/openMeAlone.mps #input point set to load in data storage
                             -V ${MITK_DATA_DIR}/RenderingTestData/ReferenceScreenshots/openMeAloneTransformedPoints640x480REF.png #corresponding reference screenshot
     )
+    # Currently not working on windows because of a rendering timing issue
+    # see bug 18083 for details
+    if(NOT WIN32)
     mitkAddCustomModuleTest(mitkSurfaceDepthSortingTransparency_StanfordBunnySTL640x480 mitkSurfaceDepthSortingTest
                             ${MITK_DATA_DIR}/RenderingTestData/Stanford_bunny.stl
                             -V ${MITK_DATA_DIR}/RenderingTestData/ReferenceScreenshots/Stanford_bunnySTLDepthSorting640x480REF.png
     )
+    endif()
     if(NOT APPLE)
       mitkAddCustomModuleTest(mitkSurfaceDepthPeelingTransparency_StanfordBunnySTL640x480 mitkSurfaceDepthPeelingTest
                               ${MITK_DATA_DIR}/RenderingTestData/Stanford_bunny.stl
@@ -205,7 +213,7 @@ if(TARGET ${TESTDRIVER})
     #mitkAddCustomModuleTest(mitkNodeDependentPointSetInteractorTest mitkNodeDependentPointSetInteractorTest
     #                        ${MITK_DATA_DIR}/Pic3D.pic.gz ${MITK_DATA_DIR}/BallBinary30x30x30.pic.gz
     #)
-    SET_PROPERTY(TEST mitkImageVtkMapper2D_rgbaImage640x480 mitkImageVtkMapper2D_pic3d640x480 mitkImageVtkMapper2D_pic3dColorBlue640x480 mitkImageVtkMapper2D_pic3dLevelWindow640x480 mitkImageVtkMapper2D_pic3dSwivel640x480 mitkImageVtkMapper2DTransferFunctionTest_Png2D-bw
+    SET_PROPERTY(TEST mitkRotatedSlice4DTest mitkImageVtkMapper2D_rgbaImage640x480 mitkImageVtkMapper2D_pic3d640x480 mitkImageVtkMapper2D_pic3dColorBlue640x480 mitkImageVtkMapper2D_pic3dLevelWindow640x480 mitkImageVtkMapper2D_pic3dSwivel640x480 mitkImageVtkMapper2DTransferFunctionTest_Png2D-bw
       # mitkImageVtkMapper2D_pic3dOpacity640x480
       mitkSurfaceVtkMapper2DTest mitkSurfaceVtkMapper3DTest_TextureProperty mitkPointSetVtkMapper2D_Pic3DPointSetForPic3D640x480 mitkPointSetVtkMapper2D_openMeAlone640x480 mitkPointSetVtkMapper2D_openMeAloneGlyphType640x480 mitkPointSetVtkMapper2D_openMeAloneTransformed640x480 #mitkSurfaceVtkMapper3DTexturedSphereTest_Football
     PROPERTY RUN_SERIAL TRUE)
@@ -215,12 +223,4 @@ if(TARGET ${TESTDRIVER})
   add_test(mitkPointSetLocaleTest  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TESTDRIVER} mitkPointSetLocaleTest ${MITK_DATA_DIR}/pointSet.mps)
   set_property(TEST mitkPointSetLocaleTest PROPERTY LABELS MITK-Core)
 
-  add_test(mitkImageWriterTest_nrrdImage ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TESTDRIVER} mitkImageWriterTest ${MITK_DATA_DIR}/NrrdWritingTestImage.jpg)
-  add_test(mitkImageWriterTest_2DPNGImage ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TESTDRIVER} mitkImageWriterTest ${MITK_DATA_DIR}/Png2D-bw.png)
-  add_test(mitkImageWriterTest_rgbPNGImage ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TESTDRIVER} mitkImageWriterTest ${MITK_DATA_DIR}/RenderingTestData/rgbImage.png)
-  add_test(mitkImageWriterTest_rgbaPNGImage ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${TESTDRIVER} mitkImageWriterTest ${MITK_DATA_DIR}/RenderingTestData/rgbaImage.png)
-  set_property(TEST mitkImageWriterTest_nrrdImage PROPERTY LABELS MITK-Core)
-  set_property(TEST mitkImageWriterTest_2DPNGImage PROPERTY LABELS MITK-Core)
-  set_property(TEST mitkImageWriterTest_rgbPNGImage PROPERTY LABELS MITK-Core)
-  set_property(TEST mitkImageWriterTest_rgbaPNGImage PROPERTY LABELS MITK-Core)
 endif() # TARGET ${TESTDRIVER}

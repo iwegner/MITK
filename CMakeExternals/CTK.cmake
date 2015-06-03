@@ -15,7 +15,7 @@ if(MITK_USE_CTK)
 
   if(NOT DEFINED CTK_DIR)
 
-    set(revision_tag d8cd14e7)
+    set(revision_tag 4d12a3b8)
     #IF(${proj}_REVISION_TAG)
     #  SET(revision_tag ${${proj}_REVISION_TAG})
     #ENDIF()
@@ -54,11 +54,15 @@ if(MITK_USE_CTK)
           )
     endif()
 
+    if(CTEST_USE_LAUNCHERS)
+      list(APPEND ctk_optional_cache_args
+        "-DCMAKE_PROJECT_${proj}_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake"
+      )
+    endif()
+
     set (ctk_qt_args -DCTK_QT_VERSION:STRING=${DESIRED_QT_VERSION})
 
-    if (DESIRED_QT_VERSION MATCHES "5")
-      list(APPEND ctk_qt_args -DQT5_INSTALL_PREFIX:FILEPATH=${QT5_INSTALL_PREFIX})
-    else()
+    if (DESIRED_QT_VERSION MATCHES "4")
       list(APPEND ctk_qt_args -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE})
     endif()
 
@@ -71,7 +75,9 @@ if(MITK_USE_CTK)
     ExternalProject_Add(${proj}
       LIST_SEPARATOR ${sep}
       URL ${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/CTK_${revision_tag}.tar.gz
-      URL_MD5 2f1255494de6ae19aae3d4dc5f2ea6de
+      URL_MD5 135910e407bd1f5de29d2a0a9efe5f80
+      #GIT_REPOSITORY https://github.com/commontk/CTK.git
+      #GIT_TAG origin/master
       UPDATE_COMMAND ""
       INSTALL_COMMAND ""
       CMAKE_GENERATOR ${gen}
@@ -95,6 +101,12 @@ if(MITK_USE_CTK)
         -DCTK_USE_GIT_PROTOCOL:BOOL=OFF
         -DDCMTK_URL:STRING=${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/CTK_DCMTK_085525e6.tar.gz
         -DqRestAPI_URL:STRING=${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/qRestAPI_5f3a03b1.tar.gz
+        # See bug 19073
+        -DPythonQt_URL:STRING=${MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL}/PythonQt_36ab9c7c.tar.gz
+      CMAKE_CACHE_ARGS
+        ${ep_common_cache_args}
+      CMAKE_CACHE_DEFAULT_ARGS
+        ${ep_common_cache_default_args}
       DEPENDS ${proj_DEPENDENCIES}
      )
 

@@ -35,9 +35,9 @@ namespace mitk {
     itkFactorylessNewMacro(Self)
       itkCloneMacro(Self)
 
-      virtual void ComputeGeometry();
+      virtual void ComputeGeometry() override;
 
-    virtual itk::LightObject::Pointer InternalClone() const;
+    virtual itk::LightObject::Pointer InternalClone() const override;
 
     vtkThinPlateSplineTransform* GetThinPlateSplineTransform() const
     {
@@ -47,11 +47,11 @@ namespace mitk {
     virtual void SetSigma(double sigma);
     virtual double GetSigma() const;
 
-    virtual bool IsValid() const;
+    virtual bool IsValid() const override;
 
   protected:
     ThinPlateSplineCurvedGeometry();
-    ThinPlateSplineCurvedGeometry(const ThinPlateSplineCurvedGeometry& other );
+    ThinPlateSplineCurvedGeometry(const ThinPlateSplineCurvedGeometry& other);
 
     virtual ~ThinPlateSplineCurvedGeometry();
 
@@ -61,18 +61,12 @@ namespace mitk {
     vtkPoints* m_VtkProjectedLandmarks;
 
     //##Documentation
-    //## @brief Pre- and Post-functions are empty in BaseGeometry
+    //## @brief PreSetSpacing
     //##
-    //## These virtual functions allow for a different beahiour in subclasses.
-    //## Do implement them in every subclass of BaseGeometry. If not needed, use {}.
-    //## If this class is inherited from a subclass of BaseGeometry, call {Superclass::Pre...();};, example: DisplayGeometry class
-    virtual void PostInitialize(){Superclass::PostInitialize();};
-    virtual void PostInitializeGeometry(mitk::BaseGeometry::Self * newGeometry) const{Superclass::PostInitializeGeometry(newGeometry);};
-    virtual void PreSetSpacing(const mitk::Vector3D& aSpacing){Superclass::PreSetSpacing(aSpacing);};
-    virtual void PreSetBounds( const BoundingBox::BoundsArrayType &bounds ){Superclass::PreSetBounds(bounds);};
-    virtual void PreSetIndexToWorldTransform( AffineTransform3D *transform){Superclass::PreSetIndexToWorldTransform(transform);};
-    virtual void PostSetExtentInMM(int direction, ScalarType extentInMM){Superclass::PostSetExtentInMM(direction,extentInMM);};
-    virtual void PostSetIndexToWorldTransform(mitk::AffineTransform3D* transform){Superclass::PostSetIndexToWorldTransform(transform);};
+    //## These virtual function allows a different beahiour in subclasses.
+    //## Do implement them in every subclass of BaseGeometry. If not needed, use
+    //## {Superclass::PreSetSpacing();};
+    virtual void PreSetSpacing(const mitk::Vector3D& aSpacing) override{ Superclass::PreSetSpacing(aSpacing); };
   };
 } // namespace mitk
 

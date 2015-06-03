@@ -11,6 +11,7 @@ endif()
 set(_package_excludes
   ${_apple_package_excludes}
   Python
+  Numpy
   OpenCL
   SYSTEM_Boost
   Boost_LIBRARIES
@@ -18,6 +19,7 @@ set(_package_excludes
   SOFA_PLUGINS
   SOFA_PLUGINS_DIR
   SUPERBUILD
+  BiophotonicsHardware_SpectroCam
 
   KWSTYLE
   MICROBIRD_TRACKER

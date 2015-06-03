@@ -49,11 +49,11 @@ protected:
     * Here actions strings from the loaded state machine pattern are mapped to functions of
     * the DataInteractor. These functions are called when an action from the state machine pattern is executed.
     */
-  virtual void ConnectActionsAndFunctions();
+  virtual void ConnectActionsAndFunctions() override;
   /**
     * This function is called when a DataNode has been set/changed.
     */
-  virtual void DataNodeChanged();
+  virtual void DataNodeChanged() override;
 
 
   /**
@@ -88,7 +88,7 @@ protected:
 
 private:
 
-  double m_InitialPickedWorldPoint[4];
+  Point3D m_InitialPickedWorldPoint;
   Point2D m_InitialPickedDisplayPoint;
 
   Geometry3D::Pointer m_OriginalGeometry;

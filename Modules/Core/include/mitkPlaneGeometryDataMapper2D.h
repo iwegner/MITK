@@ -23,10 +23,11 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkWeakPointer.h>
 #include <vtkSmartPointer.h>
 
-class vtkActor;
+class vtkActor2D;
 class vtkPropAssembly;
 class vtkFloatArray;
 class vtkCellArray;
+class vtkPolyDataMapper2D;
 
 namespace mitk {
 
@@ -56,12 +57,12 @@ public:
   virtual const mitk::PlaneGeometryData* GetInput() const;
 
   /** \brief returns the a prop assembly */
-  virtual vtkProp* GetVtkProp(mitk::BaseRenderer* renderer);
+  virtual vtkProp* GetVtkProp(mitk::BaseRenderer* renderer) override;
 
   /** Applies properties specific to this mapper */
   virtual void ApplyAllProperties( BaseRenderer *renderer );
 
-  virtual void UpdateVtkTransform(mitk::BaseRenderer *renderer);
+  virtual void UpdateVtkTransform(mitk::BaseRenderer *renderer) override;
 
   /** \brief set the default properties for this mapper */
   static void SetDefaultProperties(mitk::DataNode* node, mitk::BaseRenderer* renderer = NULL, bool overwrite = false);
@@ -79,8 +80,12 @@ public:
     ~LocalStorage();
 
     // actor
-    vtkSmartPointer<vtkActor> m_CrosshairActor;
-    vtkSmartPointer<vtkActor> m_CrosshairHelperLineActor;
+    vtkSmartPointer<vtkActor2D> m_CrosshairActor;
+    vtkSmartPointer<vtkActor2D> m_CrosshairHelperLineActor;
+    vtkSmartPointer<vtkActor2D> m_ArrowActor;
+    vtkSmartPointer<vtkPolyDataMapper2D> m_HelperLinesmapper;
+    vtkSmartPointer<vtkPolyDataMapper2D> m_Arrowmapper;
+    vtkSmartPointer<vtkPolyDataMapper2D> m_Mapper;
     vtkSmartPointer<vtkPropAssembly> m_CrosshairAssembly;
   };
 
@@ -96,7 +101,7 @@ protected:
   virtual ~PlaneGeometryDataMapper2D();
 
   /* \brief Applies the color and opacity properties and calls CreateVTKRenderObjects */
-  virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer);
+  virtual void GenerateDataForRenderer(mitk::BaseRenderer* renderer) override;
 
   void CreateVtkCrosshair(BaseRenderer *renderer);
 
@@ -128,6 +133,12 @@ protected:
   bool m_ArrowOrientationPositive;
   mitk::ScalarType m_DepthValue;
 
+  void ApplyColorAndOpacityProperties2D(BaseRenderer *renderer, vtkActor2D *actor);
+  void DrawOrientationArrow(vtkSmartPointer<vtkCellArray> triangles,
+                            vtkSmartPointer<vtkPoints> triPoints,
+                            double triangleSizeMM,
+                            Vector3D& orthogonalVector,
+                            Point3D& point1, Point3D& point2);
 };
 } // namespace mitk
 #endif /* mitkPlaneGeometryDataMapper2D_h */

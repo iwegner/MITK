@@ -13,6 +13,9 @@ set(SRC_CPP_FILES
   QmitkBallModelParametersWidget.cpp
   QmitkAstrosticksModelParametersWidget.cpp
   QmitkPrototypeSignalParametersWidget.cpp
+
+  QmitkFreeSurferParcellationHandler.cpp
+  QmitkFreeSurferParcellationWidget.cpp
 )
 
 set(INTERNAL_CPP_FILES
@@ -28,7 +31,6 @@ set(INTERNAL_CPP_FILES
   QmitkStochasticFiberTrackingView.cpp
   QmitkStreamlineTrackingView.cpp
   QmitkFiberQuantificationView.cpp
-#  QmitkFiberBundleDeveloperView.cpp
   QmitkPartialVolumeAnalysisView.cpp
   QmitkIVIMView.cpp
   QmitkTractbasedSpatialStatisticsView.cpp
@@ -47,6 +49,7 @@ set(INTERNAL_CPP_FILES
   QmitkFieldmapGeneratorView.cpp
   QmitkDiffusionRegistrationView.cpp
   QmitkDenoisingView.cpp
+  QmitkMLBTView.cpp
 
   Perspectives/QmitkFiberProcessingPerspective.cpp
   Perspectives/QmitkDiffusionImagingAppPerspective.cpp
@@ -93,6 +96,8 @@ set(UI_FILES
   src/internal/QmitkFieldmapGeneratorViewControls.ui
   src/internal/QmitkDiffusionRegistrationViewControls.ui
   src/internal/QmitkDenoisingViewControls.ui
+  src/internal/QmitkMLBTViewControls.ui
+  src/QmitkFreeSurferParcellationWidgetControls.ui
 )
 
 set(MOC_H_FILES
@@ -138,6 +143,7 @@ set(MOC_H_FILES
   src/internal/QmitkFieldmapGeneratorView.h
   src/internal/QmitkDiffusionRegistrationView.h
   src/internal/QmitkDenoisingView.h
+  src/internal/QmitkMLBTView.h
 
   src/internal/Perspectives/QmitkFiberProcessingPerspective.h
   src/internal/Perspectives/QmitkDiffusionImagingAppPerspective.h
@@ -147,6 +153,9 @@ set(MOC_H_FILES
   src/internal/Perspectives/QmitkDIAppSyntheticDataGenerationPerspective.h
   src/internal/Perspectives/QmitkDIAppIVIMPerspective.h
   src/internal/Perspectives/QmitkDiffusionDefaultPerspective.h
+
+  src/QmitkFreeSurferParcellationHandler.h
+  src/QmitkFreeSurferParcellationWidget.h
 )
 
 set(CACHED_RESOURCE_FILES
@@ -188,6 +197,7 @@ set(CACHED_RESOURCE_FILES
   resources/syntheticdata.png
   resources/ivim.png
   resources/tractography.png
+  resources/fiberTracking1.png
  )
 
 set(QRC_FILES

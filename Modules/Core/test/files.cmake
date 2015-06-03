@@ -109,6 +109,8 @@ set(MODULE_TESTS
   mitkImageToSurfaceFilterTest.cpp
   mitkEqualTest.cpp
   mitkLineTest.cpp
+  mitkItkImageIOTest.cpp
+  mitkRotatedSlice4DTest.cpp
 )
 
 if(MITK_ENABLE_RENDERING_TESTING)
@@ -155,7 +157,6 @@ set(MODULE_CUSTOM_TESTS
     mitkStateMachineFactoryTest.cpp
     mitkPointSetLocaleTest.cpp
     mitkImageTest.cpp
-    mitkImageWriterTest.cpp
     mitkImageVtkMapper2DTest.cpp
     mitkImageVtkMapper2DLevelWindowTest.cpp
     mitkImageVtkMapper2DOpacityTest.cpp
@@ -178,8 +179,13 @@ set(MODULE_CUSTOM_TESTS
     mitkImageToItkTest.cpp
     mitkImageSliceSelectorTest.cpp
     mitkSurfaceDepthPeelingTest.cpp
-    mitkSurfaceDepthSortingTest.cpp
 )
+
+# Currently not working on windows because of a rendering timing issue
+# see bug 18083 for details
+if(NOT WIN32)
+ set(MODULE_CUSTOM_TESTS ${MODULE_CUSTOM_TESTS} mitkSurfaceDepthSortingTest.cpp)
+endif()
 
 set(RESOURCE_FILES
   Interactions/AddAndRemovePoints.xml

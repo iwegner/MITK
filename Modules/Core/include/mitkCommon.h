@@ -36,8 +36,21 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 typedef unsigned int MapperSlotId;
 
-
+/** From ITK 4.7 version, the TypeMacro overrides (by using the explicit attribute) the GetNameOfClass
+ * hence the SuperClass must provide one.
+ *
+ * If not, use the mitkClassMacroNoParent version
+ */
 #define mitkClassMacro(className,SuperClassName) \
+  typedef className        Self; \
+  typedef SuperClassName      Superclass; \
+  typedef itk::SmartPointer<Self> Pointer; \
+  typedef itk::SmartPointer<const Self>  ConstPointer; \
+  static const char* GetStaticNameOfClass() { return #className; } \
+  virtual std::vector<std::string> GetClassHierarchy() const override { return mitk::GetClassHierarchy<Self>(); } \
+  itkTypeMacro(className,SuperClassName)
+
+#define mitkClassMacroItkParent(className,SuperClassName) \
   typedef className        Self; \
   typedef SuperClassName      Superclass; \
   typedef itk::SmartPointer<Self> Pointer; \
@@ -45,6 +58,17 @@ typedef unsigned int MapperSlotId;
   static const char* GetStaticNameOfClass() { return #className; } \
   virtual std::vector<std::string> GetClassHierarchy() const { return mitk::GetClassHierarchy<Self>(); } \
   itkTypeMacro(className,SuperClassName)
+
+/** At version 4.7 provides two type macros, the normal one expects the Superclass to provide the
+ *  GetNameOfClass explicitely, the NoParent deos not expect anything.
+ */
+#define mitkClassMacroNoParent(className) \
+  typedef className        Self; \
+  typedef itk::SmartPointer<Self> Pointer; \
+  typedef itk::SmartPointer<const Self>  ConstPointer; \
+  static const char* GetStaticNameOfClass() { return #className; } \
+  virtual std::vector<std::string> GetClassHierarchy() const { return mitk::GetClassHierarchy<Self>(); } \
+  itkTypeMacroNoParent(className)
 
 /**
 * Macro for Constructors with one parameter for classes derived from itk::Lightobject
@@ -124,7 +148,7 @@ static Pointer New(typea _arga, typeb _argb, typec _argc, typed _argd, typee _ar
 /** Creates a Clone() method for "Classname". Returns a smartPtr of a clone of the
 calling object*/
 #define mitkCloneMacro(classname) \
-  virtual itk::LightObject::Pointer InternalClone() const \
+  virtual itk::LightObject::Pointer InternalClone() const override \
 { \
   Pointer smartPtr = new classname(*this); \
   smartPtr->UnRegister(); \

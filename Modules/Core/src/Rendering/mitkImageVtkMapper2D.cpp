@@ -290,9 +290,9 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *render
   // is present)
   //this used for generating a vtkPLaneSource with the right size
   double sliceBounds[6];
-  for ( int i = 0; i < 6; ++i )
+  for (auto & sliceBound : sliceBounds)
   {
-    sliceBounds[i] = 0.0;
+    sliceBound = 0.0;
   }
   localStorage->m_Reslicer->GetClippedPlaneBounds(sliceBounds);
 
@@ -302,9 +302,9 @@ void mitk::ImageVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *render
   // calculate minimum bounding rect of IMAGE in texture
   {
     double textureClippingBounds[6];
-    for ( int i = 0; i < 6; ++i )
+    for (auto & textureClippingBound : textureClippingBounds)
     {
-      textureClippingBounds[i] = 0.0;
+      textureClippingBound = 0.0;
     }
     // Calculate the actual bounds of the transformed plane clipped by the
     // dataset bounding box; this is required for drawing the texture at the
@@ -712,7 +712,7 @@ void mitk::ImageVtkMapper2D::SetDefaultProperties(mitk::DataNode* node, mitk::Ba
   }
 
   bool isBinaryImage(false);
-  if ( ! node->GetBoolProperty("binary", isBinaryImage) )
+  if ( ! node->GetBoolProperty("binary", isBinaryImage) && image->GetPixelType().GetNumberOfComponents()==1 )
   {
 
     // ok, property is not set, use heuristic to determine if this
@@ -748,6 +748,19 @@ void mitk::ImageVtkMapper2D::SetDefaultProperties(mitk::DataNode* node, mitk::Ba
     isBinaryImage = ( maxValue == min2ndValue && minValue == max2ndValue );
   }
 
+  std::string className = image->GetNameOfClass();
+  if (className != "TensorImage" && className != "QBallImage")
+  {
+    PixelType pixelType = image->GetPixelType();
+    size_t numComponents = pixelType.GetNumberOfComponents();
+
+    if ((pixelType.GetPixelType() == itk::ImageIOBase::VECTOR && numComponents > 1) ||
+        numComponents == 2 || numComponents > 4)
+    {
+      node->AddProperty("Image.Displayed Component", mitk::IntProperty::New(0), renderer, overwrite);
+    }
+  }
+
   // some more properties specific for a binary...
   if (isBinaryImage)
   {
@@ -766,20 +779,6 @@ void mitk::ImageVtkMapper2D::SetDefaultProperties(mitk::DataNode* node, mitk::Ba
     node->AddProperty( "color", ColorProperty::New(1.0,1.0,1.0), renderer, overwrite );
     node->AddProperty( "binary", mitk::BoolProperty::New( false ), renderer, overwrite );
     node->AddProperty("layer", mitk::IntProperty::New(0), renderer, overwrite);
-
-    std::string className = image->GetNameOfClass();
-
-    if (className != "TensorImage" && className != "QBallImage")
-    {
-      PixelType pixelType = image->GetPixelType();
-      size_t numComponents = pixelType.GetNumberOfComponents();
-
-      if ((pixelType.GetPixelType() == itk::ImageIOBase::VECTOR && numComponents > 1) ||
-          numComponents == 2 || numComponents > 4)
-      {
-        node->AddProperty("Image.Displayed Component", mitk::IntProperty::New(0), renderer, overwrite);
-      }
-    }
   }
 
   if(image.IsNotNull() && image->IsInitialized())

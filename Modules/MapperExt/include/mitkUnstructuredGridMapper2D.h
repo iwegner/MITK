@@ -59,7 +59,7 @@ public:
      * producing (n-1)-cells.
      * @param renderer the render to render in.
      */
-    virtual void Paint( mitk::BaseRenderer* renderer );
+    virtual void Paint( mitk::BaseRenderer* renderer ) override;
 
     LocalStorageHandler<BaseLocalStorage> m_LSH;
 
@@ -69,7 +69,7 @@ protected:
 
     virtual ~UnstructuredGridMapper2D();
 
-    virtual void GenerateDataForRenderer(BaseRenderer*);
+    virtual void GenerateDataForRenderer(BaseRenderer*) override;
 
     /**
      * Determines, if the associated BaseData is mapped three-dimensionally (mapper-slot id 2)
@@ -82,7 +82,7 @@ protected:
      * Determines the pointset object to be cut.
      * returns the pointset if possible, otherwise NULL.
      */
-    virtual vtkPointSet* GetVtkPointSet(BaseRenderer* renderer );
+    virtual vtkPointSet* GetVtkPointSet(BaseRenderer* renderer, int time = 0 );
 
     /**
      * Determines the LookupTable used by the associated vtkMapper.

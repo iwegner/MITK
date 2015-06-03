@@ -27,7 +27,7 @@ namespace mitk
  The main purpose of this class is to convert between display coordinates
  (in display-units) and world coordinates (in mm).
  DisplayGeometry depends on the size of the display area (widget width and
-  height, m_SizeInDisplayUnits) and on a PlaneGeometry (m_WoldGeometry). It
+ height, m_SizeInDisplayUnits) and on a PlaneGeometry (m_WoldGeometry). It
  represents a recangular view on this world-geometry. E.g., you can tell
  the DisplayGeometry to fit the world-geometry in the display area by
  calling Fit(). Provides methods for zooming and panning.
@@ -60,22 +60,22 @@ namespace mitk
  is really the \a certaingeometry.
 
  \ingroup Geometry
-  */
+ */
   class MITKCORE_EXPORT DisplayGeometry : public PlaneGeometry
   {
   public:
 
-    mitkClassMacro(DisplayGeometry,PlaneGeometry);
+    mitkClassMacro(DisplayGeometry, PlaneGeometry);
 
     /// Method for creation through the object factory.
     itkFactorylessNewMacro(Self)
-    itkCloneMacro(Self)
+      itkCloneMacro(Self)
 
-    /// \brief duplicates the geometry, NOT useful for this sub-class
-    virtual itk::LightObject::Pointer InternalClone() const;
+      /// \brief duplicates the geometry, NOT useful for this sub-class
+      virtual itk::LightObject::Pointer InternalClone() const override;
 
     /// \return this objects modified time.
-    virtual unsigned long GetMTime() const;
+    virtual unsigned long GetMTime() const override;
 
     //virtual const TimeBounds& GetTimeBounds() const;
 
@@ -102,7 +102,7 @@ namespace mitk
      When the aspect ration changes, the displayed region includes the old displayed region, but
      cannot be exaclty the same.
      */
-    virtual void SetSizeInDisplayUnits(unsigned int width, unsigned int height, bool keepDisplayedRegion=true);
+    virtual void SetSizeInDisplayUnits(unsigned int width, unsigned int height, bool keepDisplayedRegion = true);
     virtual Vector2D GetSizeInDisplayUnits() const;
     virtual Vector2D GetSizeInMM() const;
     unsigned int GetDisplayWidth() const;
@@ -137,7 +137,7 @@ namespace mitk
     *
     * \return true if zoom request was within accepted limits
     */
-    virtual bool ZoomWithFixedWorldCoordinates(ScalarType factor, const Point2D& focusDisplayUnits, const Point2D& focusUnitsInMM );
+    virtual bool ZoomWithFixedWorldCoordinates(ScalarType factor, const Point2D& focusDisplayUnits, const Point2D& focusUnitsInMM);
 
     // \return true if move request was within accepted limits
     virtual bool MoveBy(const Vector2D& shiftInDisplayUnits);
@@ -168,27 +168,27 @@ namespace mitk
     /**
     * \brief projects the given point onto current 2D world geometry plane
     */
-    virtual bool Project(const Point3D &pt3d_mm, Point3D &projectedPt3d_mm) const;
+    virtual bool Project(const Point3D &pt3d_mm, Point3D &projectedPt3d_mm) const override;
 
     /**
     * \brief projects the given vector onto current 2D world geometry plane.
     * \warning DEPRECATED, please use Project(const Vector3D &vec3d_mm, Vector3D &projectedVec3d_mm) instead
     */
-    virtual bool Project(const Point3D & atPt3d_mm, const Vector3D &vec3d_mm, Vector3D &projectedVec3d_mm) const;
+    virtual bool Project(const Point3D & atPt3d_mm, const Vector3D &vec3d_mm, Vector3D &projectedVec3d_mm) const override;
 
     /**
     * \brief projects the given vector onto current 2D world geometry plane
     */
-    virtual bool Project(const Vector3D &vec3d_mm, Vector3D &projectedVec3d_mm) const;
+    virtual bool Project(const Vector3D &vec3d_mm, Vector3D &projectedVec3d_mm) const override;
 
-    virtual bool Map(const Point3D &pt3d_mm, Point2D &pt2d_mm) const;
-    virtual void Map(const Point2D &pt2d_mm, Point3D &pt3d_mm) const;
-    virtual bool Map(const Point3D & atPt3d_mm, const Vector3D &vec3d_mm, Vector2D &vec2d_mm) const;
-    virtual void Map(const Point2D & atPt2d_mm, const Vector2D &vec2d_mm, Vector3D &vec3d_mm) const;
+    virtual bool Map(const Point3D &pt3d_mm, Point2D &pt2d_mm) const override;
+    virtual void Map(const Point2D &pt2d_mm, Point3D &pt3d_mm) const override;
+    virtual bool Map(const Point3D & atPt3d_mm, const Vector3D &vec3d_mm, Vector2D &vec2d_mm) const override;
+    virtual void Map(const Point2D & atPt2d_mm, const Vector2D &vec2d_mm, Vector3D &vec3d_mm) const override;
 
-    virtual bool IsValid() const;
+    virtual bool IsValid() const override;
 
-    virtual bool IsAbove( const Point3D &pt3d_mm , bool /*considerBoundingBox=false*/) const { return Superclass::IsAbove(pt3d_mm, true);};
+    virtual bool IsAbove(const Point3D &pt3d_mm, bool /*considerBoundingBox=false*/) const override { return Superclass::IsAbove(pt3d_mm, true); };
 
   protected:
 
@@ -209,10 +209,10 @@ namespace mitk
       </ol>
 
       The little more complicated implementation is illustrated in the code itself.
-     */
+      */
     virtual bool RefitVisibleRect();
 
-    virtual void PrintSelf(std::ostream& os, itk::Indent indent) const;
+    virtual void PrintSelf(std::ostream& os, itk::Indent indent) const override;
 
     Vector2D m_OriginInMM;
     Vector2D m_OriginInDisplayUnits;
@@ -226,19 +226,12 @@ namespace mitk
     float m_MinWorldViewPercentage;
 
     //##Documentation
-    //## @brief Pre- and Post-functions are empty in BaseGeometry
+    //## @brief PreSetSpacing
     //##
-    //## These virtual functions allow for a different beahiour in subclasses.
-    //## Do implement them in every subclass of BaseGeometry. If not needed, use {}.
-    //## If this class is inherited from a subclass of BaseGeometry, call {Superclass::Pre...();};, example: DisplayGeometry class
-    virtual void PostInitialize(){Superclass::PostInitialize();};
-    virtual void PostInitializeGeometry(mitk::BaseGeometry::Self * newGeometry) const{Superclass::PostInitializeGeometry(newGeometry);};
-    virtual void PreSetSpacing(const mitk::Vector3D& aSpacing){Superclass::PreSetSpacing(aSpacing);};
-    virtual void PreSetBounds( const BoundingBox::BoundsArrayType &bounds ){Superclass::PreSetBounds(bounds);};
-    virtual void PreSetIndexToWorldTransform( AffineTransform3D *transform){Superclass::PreSetIndexToWorldTransform(transform);};
-    virtual void PostSetExtentInMM(int direction, ScalarType extentInMM){Superclass::PostSetExtentInMM(direction,extentInMM);};
-    virtual void PostSetIndexToWorldTransform(mitk::AffineTransform3D* transform){Superclass::PostSetIndexToWorldTransform(transform);};
-
+    //## These virtual function allows a different beahiour in subclasses.
+    //## Do implement them in every subclass of BaseGeometry. If not needed, use
+    //## {Superclass::PreSetSpacing();};
+    virtual void PreSetSpacing(const mitk::Vector3D& aSpacing) override{ Superclass::PreSetSpacing(aSpacing); };
   };
 } // namespace
 
