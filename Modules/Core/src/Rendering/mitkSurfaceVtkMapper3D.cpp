@@ -249,6 +249,26 @@ void mitk::SurfaceVtkMapper3D::ApplyMitkPropertiesToVtkProperty(mitk::DataNode *
         property->SetRepresentation( p->GetVtkRepresentation() );
     }
 
+    // Edge visibility
+    {
+        bool edgesVisible = false;
+        node->GetBoolProperty("material.edgeVisibility", edgesVisible, renderer);
+        property->SetEdgeVisibility(static_cast<int>(edgesVisible));
+    }
+
+    // Edge color
+    {
+        double edgeColor[3] = { 0.5, 0.5, 0.5 };
+        mitk::ColorProperty::Pointer p;
+        node->GetProperty(p, "material.edgeColor", renderer);
+        if (p.IsNotNull())
+        {
+            mitk::Color c = p->GetColor();
+            edgeColor[0] = c.GetRed(); edgeColor[1] = c.GetGreen(); edgeColor[2] = c.GetBlue();
+        }
+        property->SetEdgeColor(edgeColor);
+    }
+
     // Interpolation
     {
       mitk::VtkInterpolationProperty::Pointer p;
@@ -468,6 +488,9 @@ void mitk::SurfaceVtkMapper3D::SetDefaultPropertiesForVtkProperty(mitk::DataNode
 
     node->AddProperty( "material.representation"      , mitk::VtkRepresentationProperty::New()  , renderer, overwrite );
     node->AddProperty( "material.interpolation"       , mitk::VtkInterpolationProperty::New()   , renderer, overwrite );
+
+    node->AddProperty( "material.edgeVisibility", mitk::BoolProperty::New(false), renderer, overwrite);
+    node->AddProperty( "material.edgeColor", mitk::ColorProperty::New(0.5f, 0.5f, 0.5f), renderer, overwrite);
   }
 
   // Shaders
