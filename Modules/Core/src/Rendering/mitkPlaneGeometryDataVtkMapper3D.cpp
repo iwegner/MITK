@@ -444,8 +444,15 @@ namespace mitk
 
     VtkRepresentationProperty* representationProperty;
     this->GetDataNode()->GetProperty(representationProperty, "material.representation", renderer);
-    if ( representationProperty != NULL )
-      m_BackgroundActor->GetProperty()->SetRepresentation( representationProperty->GetVtkRepresentation() );
+    if (representationProperty != nullptr)
+    {
+        // Surface with wireframe currently not supported for plane geometry.
+        // So translate to "Surface"
+        if (representationProperty->GetVtkRepresentation() > VTK_SURFACE)
+            representationProperty->SetRepresentationToSurface();
+
+        m_BackgroundActor->GetProperty()->SetRepresentation(representationProperty->GetVtkRepresentation());
+    }
   }
 
   void PlaneGeometryDataVtkMapper3D::ProcessNode( DataNode * node, BaseRenderer* renderer,
