@@ -780,6 +780,12 @@ void QmitkDataManagerView::SurfaceRepresentationActionToggled( bool /*checked*/ 
   {
     if ( representationProp->IsValidEnumerationValue( activatedItem ) )
     {
+      //toggle between showing edges
+      if (activatedItem == "Surface")
+        node->GetPropertyList()->SetBoolProperty("material.edgeVisibility", false);
+      else if (activatedItem == "Surface w. Wireframe")
+        node->GetPropertyList()->SetBoolProperty("material.edgeVisibility", true);
+
       representationProp->SetValue( activatedItem );
       representationProp->InvokeEvent( itk::ModifiedEvent() );
       representationProp->Modified();
