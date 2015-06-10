@@ -28,7 +28,7 @@ set(mitk_modules
   SurfaceInterpolation
   Segmentation
   PlanarFigureSegmentation
-  OpenViewCore
+  #OpenViewCore
   QmlItems
   QtWidgets
   QtWidgetsExt
