@@ -20,6 +20,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <iostream>
 #include <fstream>
 #include <locale>
+#include <iomanip>
 
 //
 // Initialization of the xml tags.
@@ -127,15 +128,15 @@ void mitk::PointSetWriterService::WriteXML( const mitk::PointSet* pointSet, std:
       WriteEndElement( XML_SPEC, out, false );
 
       WriteStartElement( XML_X, out );
-      out << ConvertToString( point[ 0 ] );
+      out << std::setprecision(12) << std::fixed << point[0];
       WriteEndElement( XML_X, out, false );
 
       WriteStartElement( XML_Y, out );
-      out << ConvertToString( point[ 1 ] );
+      out << std::setprecision(12) << std::fixed << point[1];
       WriteEndElement( XML_Y, out, false );
 
       WriteStartElement( XML_Z, out );
-      out << ConvertToString( point[ 2 ] );
+      out << std::setprecision(12) << std::fixed << point[2];
       WriteEndElement( XML_Z, out, false );
 
       WriteEndElement( XML_POINT, out );
