@@ -24,11 +24,15 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <vtkSmartPointer.h>
 
 class vtkActor;
+class vtkCellArray;
+class vtkBitArray;
+class vtkGlyph3DMapper;
 class vtkPropAssembly;
 class vtkAppendPolyData;
 class vtkPolyData;
 class vtkTubeFilter;
 class vtkPolyDataMapper;
+class vtkTransformPolyDataFilter;
 
 namespace mitk {
 
@@ -83,7 +87,7 @@ namespace mitk {
   *   - \b "show contour": if set to on, lines between the points are shown
   *   - \b "close contour": if set to on, the open strip is closed (first point
   *       connected with last point)
-  *   - \b "pointsize": size of the points mapped
+  *   - \b "pointsize": size of the points mapped (diameter of a sphere, in world woordinates!)
   *   - \b "label": text of the Points to show besides points
   *   - \b "contoursize": size of the contour drawn between the points
   *       (if not set, the pointsize is taken)
@@ -131,6 +135,15 @@ namespace mitk {
     vtkSmartPointer<vtkAppendPolyData> m_vtkSelectedPointList;
     vtkSmartPointer<vtkAppendPolyData> m_vtkUnselectedPointList;
 
+    vtkSmartPointer<vtkPoints> m_VtkPoints;
+    vtkSmartPointer<vtkCellArray> m_VtkPointConnections;
+    vtkSmartPointer<vtkBitArray> m_VtkPointSelectionMask;
+    vtkSmartPointer<vtkBitArray> m_VtkPointNotSelectionMask;
+
+    vtkSmartPointer<vtkTransformPolyDataFilter> m_VtkPointsTransformer;
+
+    vtkSmartPointer<vtkGlyph3DMapper> m_VtkSelectedGlyphMapper;
+    vtkSmartPointer<vtkGlyph3DMapper> m_VtkUnselectedGlyphMapper;
     vtkSmartPointer<vtkPolyDataMapper> m_VtkSelectedPolyDataMapper;
     vtkSmartPointer<vtkPolyDataMapper> m_VtkUnselectedPolyDataMapper;
 
@@ -142,10 +155,6 @@ namespace mitk {
 
     //help for contour between points
     vtkSmartPointer<vtkAppendPolyData> m_vtkTextList;
-
-    //variables to be able to log, how many inputs have been added to PolyDatas
-    unsigned int m_NumberOfSelectedAdded;
-    unsigned int m_NumberOfUnselectedAdded;
 
     //variables to check if an update of the vtk objects is needed
     ScalarType m_PointSize;
