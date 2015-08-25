@@ -62,7 +62,7 @@ std::string mitk::GeometryDataSerializer::Serialize()
   {
       MITK_ERROR << "Unable to find I/O for GeometryData object";
   }
-     
+
   // when failed, return empty string
   return "";
 }

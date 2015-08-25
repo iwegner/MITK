@@ -17,13 +17,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkGeometryDataWriterService.h"
 #include "mitkIOMimeTypes.h"
 
-#include "mitkGeometry3D.h"
+#include "mitkGeometry3DToXML.h"
 
 #include <tinyxml.h>
-
-#include <iostream>
-#include <fstream>
-#include <locale>
 
 #include <mitkLocaleSwitch.h>
 
@@ -54,7 +50,7 @@ void mitk::GeometryDataWriterService::Write()
   {
     mitkThrow() << "Stream not good.";
   }
-  
+
   // Switch the current locale to "C"
   LocaleSwitch localeSwitch("C");
 
@@ -66,7 +62,7 @@ void mitk::GeometryDataWriterService::Write()
 
   TiXmlDeclaration* decl = new TiXmlDeclaration("1.0", "UTF-8", ""); // TODO what to write here? encoding? standalone would mean that we provide a DTD somewhere...
   doc.LinkEndChild(decl);
-  
+
   TiXmlElement* rootNode = new TiXmlElement("GeometryData");
   doc.LinkEndChild(rootNode);
 
@@ -81,7 +77,8 @@ void mitk::GeometryDataWriterService::Write()
   const Geometry3D* geom3D(NULL);
   if ( geom3D = dynamic_cast<const Geometry3D*>( data->GetGeometry() ) )
   {
-      WriteSpecific(rootNode, geom3D);
+      TiXmlElement* geometryElement = Geometry3DToXML::ToXML( geom3D );
+      rootNode->LinkEndChild( geometryElement );
   }
 
   // Write out document
@@ -91,64 +88,4 @@ void mitk::GeometryDataWriterService::Write()
 mitk::GeometryDataWriterService*mitk::GeometryDataWriterService::Clone() const
 {
   return new GeometryDataWriterService(*this);
-}
-
-void mitk::GeometryDataWriterService::WriteSpecific(TiXmlNode* rootNode, const Geometry3D* geom3D)
-{
-  assert(rootNode);
-  assert(geom3D);
-
-  // really serialize
-  const AffineTransform3D* transform = geom3D->GetIndexToWorldTransform();
-
-  // get transform parameters that would need to be serialized
-  AffineTransform3D::MatrixType matrix = transform->GetMatrix();
-  AffineTransform3D::OffsetType offset = transform->GetOffset();
-  
-  bool isImageGeometry = geom3D->GetImageGeometry();
-  BaseGeometry::BoundsArrayType bounds = geom3D->GetBounds();
-
-  // create XML file
-  // construct XML tree describing the geometry
-  TiXmlElement* geomElem = new TiXmlElement("Geometry3D");
-  geomElem->SetAttribute("ImageGeometry", isImageGeometry ? "true" : "false" );
-  geomElem->SetAttribute("FrameOfReferenceID", geom3D->GetFrameOfReferenceID());
-
-  rootNode->LinkEndChild(geomElem);
-
-  // coefficients are matrix[row][column]!
-  TiXmlElement* matrixElem = new TiXmlElement("IndexToWorld");
-  matrixElem->SetAttribute("type", "Matrix3x3");
-  matrixElem->SetDoubleAttribute("m_0_0", matrix[0][0]);
-  matrixElem->SetDoubleAttribute("m_0_1", matrix[0][1]);
-  matrixElem->SetDoubleAttribute("m_0_2", matrix[0][2]);
-  matrixElem->SetDoubleAttribute("m_1_0", matrix[1][0]);
-  matrixElem->SetDoubleAttribute("m_1_1", matrix[1][1]);
-  matrixElem->SetDoubleAttribute("m_1_2", matrix[1][2]);
-  matrixElem->SetDoubleAttribute("m_2_0", matrix[2][0]);
-  matrixElem->SetDoubleAttribute("m_2_1", matrix[2][1]);
-  matrixElem->SetDoubleAttribute("m_2_2", matrix[2][2]);
-  geomElem->LinkEndChild(matrixElem);
-  
-  TiXmlElement* offsetElem = new TiXmlElement("Offset");
-  offsetElem->SetAttribute("type", "Vector3D");
-  offsetElem->SetDoubleAttribute("x", offset[0]);
-  offsetElem->SetDoubleAttribute("y", offset[1]);
-  offsetElem->SetDoubleAttribute("z", offset[2]);
-  geomElem->LinkEndChild(offsetElem);
-
-  TiXmlElement* boundsElem = new TiXmlElement("Bounds");
-  TiXmlElement* boundsMinElem = new TiXmlElement("Min");
-  boundsMinElem->SetAttribute("type", "Vector3D");
-  boundsMinElem->SetDoubleAttribute("x", bounds[0]);
-  boundsMinElem->SetDoubleAttribute("y", bounds[2]);
-  boundsMinElem->SetDoubleAttribute("z", bounds[4]);
-  boundsElem->LinkEndChild(boundsMinElem);
-  TiXmlElement* boundsMaxElem = new TiXmlElement("Max");
-  boundsMaxElem->SetAttribute("type", "Vector3D");
-  boundsMaxElem->SetDoubleAttribute("x", bounds[1]);
-  boundsMaxElem->SetDoubleAttribute("y", bounds[3]);
-  boundsMaxElem->SetDoubleAttribute("z", bounds[5]);
-  boundsElem->LinkEndChild(boundsMaxElem);
-  geomElem->LinkEndChild(boundsElem);
 }
