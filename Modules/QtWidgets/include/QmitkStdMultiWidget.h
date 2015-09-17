@@ -173,6 +173,9 @@ public slots:
 
   void changeLayoutTo2x2Dand3DWidget();
 
+  //! widget with 2x2D widget and 1x3D widget with aspect 1/3rd and 2/3rd
+  void changeLayoutTo2x2Dand3DWidgetTwoThirdAspect();
+
   void changeLayoutToLeft2Dand3DRight2D();
 
   void changeLayoutTo2DUpAnd3DDown();
@@ -285,6 +288,7 @@ public:
     LAYOUT_ROW_WIDGET_SMALL3_AND_BIG4,
     LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4,
     LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET,
+    LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD,
     LAYOUT_2D_UP_AND_3D_DOWN
   };
 

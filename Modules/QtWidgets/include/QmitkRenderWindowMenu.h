@@ -212,6 +212,10 @@ protected slots:
    * triggered() signal of m_2x2Dand3DWidgetLayoutAction. */
   void OnChangeLayoutTo2x2Dand3DWidget(bool);
 
+  /*! Slot for changing layout design to Axial n Sagittal left, 3D right layout. The slot is connected to the
+   *  triggered() signal of m_2x2Dand3DWidgetLayoutAction. */
+  void OnChangeLayoutTo2x2Dand3DWidgetTwoThirdAspect(bool);
+
   /*! Slot for changing layout design to Axial n 3D left, Sagittal right layout. The slot is connected to the
    * triggered() signal of m_Left2Dand3DRight2DLayoutAction. */
   void OnChangeLayoutToLeft2Dand3DRight2D(bool);
@@ -244,7 +248,8 @@ public:
     LAYOUT_ROWWIDGETSMALL3ANDBIG4, // not in use in this class, but we need it here to synchronize with the
                                    // SdtMultiWidget.
     LAYOUT_SMALLUPPERWIDGET2BIGAND4,
-    LAYOUT_LEFT2DAND3DRIGHT2D
+    LAYOUT_LEFT2DAND3DRIGHT2D,
+    LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD
   };
 
   void ShowMenu();
@@ -297,6 +302,9 @@ protected:
   /*! QAction for axial n 3D left, sagittal right layout design*/
   QAction *m_Left2Dand3DRight2DLayoutAction;
 
+  /*! QAction for 2x2D and 1x3D with aspect ration 1/3rd 2/3rd*/
+  QAction*            m_2x2Dand3DWidgetTwo3rdAspectLayoutAction;
+
   QLabel *m_TSLabel;
 
   /*! QMenu containg all layout direction and layout design settings.*/
@@ -310,7 +318,7 @@ protected:
   /*! Index of layout design. 0: LAYOUT_DEFAULT; 1: LAYOUT_2DIMAGEUP; 2: LAYOUT_2DIMAGELEFT; 3: LAYOUT_BIG3D
   4: LAYOUT_AXIAL; 5: LAYOUT_SAGITTAL; 6: LAYOUT_CORONAL; 7: LAYOUT_2X2DAND3DWIDGET; 8: LAYOUT_ROWWIDGET3AND4;
   9: LAYOUT_COLUMNWIDGET3AND4; 10: LAYOUT_ROWWIDGETSMALL3ANDBIG4; 11: LAYOUT_SMALLUPPERWIDGET2BIGAND4; 12:
-  LAYOUT_LEFT2DAND3DRIGHT2D */
+  LAYOUT_LEFT2DAND3DRIGHT2D; 13 LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD */
   unsigned int m_LayoutDesign;
 
   /*! Store index of old layout design. It is used e.g. for the full-screen mode, when deactivating the mode the former
