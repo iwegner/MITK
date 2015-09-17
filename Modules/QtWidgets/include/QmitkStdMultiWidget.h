@@ -184,6 +184,9 @@ public slots:
   void changeLayoutToSmallUpperWidget2Big3and4();
 
   void changeLayoutTo2x2Dand3DWidget();
+  
+  //! widget with 2x2D widget and 1x3D widget with aspect 1/3rd and 2/3rd
+  void changeLayoutTo2x2Dand3DWidgetTwoThirdAspect();
 
   void changeLayoutToLeft2Dand3DRight2D();
 
@@ -287,8 +290,9 @@ public:
          LAYOUT_BIG_3D, LAYOUT_WIDGET1, LAYOUT_WIDGET2, LAYOUT_WIDGET3,
          LAYOUT_2X_2D_AND_3D_WIDGET, LAYOUT_ROW_WIDGET_3_AND_4,
          LAYOUT_COLUMN_WIDGET_3_AND_4, LAYOUT_ROW_WIDGET_SMALL3_AND_BIG4 ,
-         LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4,LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET,
-         LAYOUT_2D_UP_AND_3D_DOWN};
+         LAYOUT_SMALL_UPPER_WIDGET2_BIG3_AND4, LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET, 
+         LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD,
+         LAYOUT_2D_UP_AND_3D_DOWN};  //Not handled by QmitkRenderWindowMenu
 
   enum {
     AXIAL,

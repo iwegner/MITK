@@ -1154,6 +1154,73 @@ void QmitkStdMultiWidget::changeLayoutTo2x2Dand3DWidget()
   this->UpdateAllWidgets();
 }
 
+void QmitkStdMultiWidget::changeLayoutTo2x2Dand3DWidgetTwoThirdAspect()
+{
+    SMW_INFO << "changing layout to 2 x 2D and 3D Widget with 1/3rd to 2/3rd aspect\n";
+
+    //Hide all Menu Widgets
+    this->HideAllWidgetToolbars();
+
+    delete QmitkStdMultiWidgetLayout;
+
+    //create Main Layout
+    QmitkStdMultiWidgetLayout = new QHBoxLayout(this);
+
+    //create main splitter
+    m_MainSplit = new QSplitter(this);
+    QmitkStdMultiWidgetLayout->addWidget(m_MainSplit);
+
+    //create m_LayoutSplit and add to the mainSplit
+    m_LayoutSplit = new QSplitter(m_MainSplit);
+    m_MainSplit->addWidget(m_LayoutSplit);
+
+    //add LevelWindow Widget to mainSplitter
+    m_MainSplit->addWidget(levelWindowWidget);
+
+    //create m_SubSplit1 and m_SubSplit2
+    m_SubSplit1 = new QSplitter(Qt::Vertical, m_LayoutSplit);
+    m_SubSplit2 = new QSplitter(m_LayoutSplit);
+
+    //add Widgets to splitter
+    m_SubSplit1->addWidget(mitkWidget1Container);
+    m_SubSplit1->addWidget(mitkWidget2Container);
+    m_SubSplit2->addWidget(mitkWidget4Container);
+
+    //set Splitter Size
+    QList<int> splitterSizeVertical;
+    splitterSizeVertical.push_back(1000);
+    splitterSizeVertical.push_back(1000);
+    m_SubSplit1->setSizes(splitterSizeVertical);
+
+    // 1/3rd and 2/3rd
+    QList<int> splitterSizeHorizontal;
+    splitterSizeHorizontal.push_back(1000);
+    splitterSizeHorizontal.push_back(2000);
+    //m_SubSplit2->setSizes(splitterSizeHorizontal);
+    m_LayoutSplit->setSizes(splitterSizeHorizontal);
+
+    //show mainSplitt and add to Layout
+    m_MainSplit->show();
+
+    //show/hide Widgets
+    if (mitkWidget1->isHidden()) mitkWidget1->show();
+    if (mitkWidget2->isHidden()) mitkWidget2->show();
+    mitkWidget3->hide();
+    if (mitkWidget4->isHidden()) mitkWidget4->show();
+
+    m_Layout = LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD;
+
+    //update Layout Design List
+    mitkWidget1->LayoutDesignListChanged(LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD);
+    mitkWidget2->LayoutDesignListChanged(LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD);
+    mitkWidget3->LayoutDesignListChanged(LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD);
+    mitkWidget4->LayoutDesignListChanged(LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD);
+
+    //update Alle Widgets
+    this->UpdateAllWidgets();
+}
+
+
 void QmitkStdMultiWidget::changeLayoutToLeft2Dand3DRight2D()
 {
   SMW_INFO << "changing layout to 2D and 3D left, 2D right Widget" << std::endl;
@@ -2136,6 +2203,16 @@ void QmitkStdMultiWidget::OnLayoutDesignChanged( int layoutDesignIndex )
   case LAYOUT_2D_AND_3D_LEFT_2D_RIGHT_WIDGET:
     {
       this->changeLayoutToLeft2Dand3DRight2D();
+      break;
+    }
+  case  LAYOUT_2X_2D_AND_3D_WIDGET_2_3RD:
+    {
+      this->changeLayoutTo2x2Dand3DWidgetTwoThirdAspect();
+      break;
+    }
+  default:
+    {
+      MITK_WARN << "Layout isn't supported!";
       break;
     }
   };
