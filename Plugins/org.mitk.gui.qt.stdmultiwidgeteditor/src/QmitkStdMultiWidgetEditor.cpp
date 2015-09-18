@@ -25,7 +25,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <QWidget>
 
 #include <mitkColorProperty.h>
-#include <mitkGlobalInteraction.h>
 #include <mitkNodePredicateNot.h>
 #include <mitkNodePredicateProperty.h>
 
@@ -226,16 +225,6 @@ QStringList QmitkStdMultiWidgetEditor::GetDecorations() const
   return decorations;
 }
 
-mitk::SlicesRotator* QmitkStdMultiWidgetEditor::GetSlicesRotator() const
-{
-  return d->m_StdMultiWidget->GetSlicesRotator();
-}
-
-mitk::SlicesSwiveller* QmitkStdMultiWidgetEditor::GetSlicesSwiveller() const
-{
-  return d->m_StdMultiWidget->GetSlicesSwiveller();
-}
-
 void QmitkStdMultiWidgetEditor::EnableSlicingPlanes(bool enable)
 {
   d->m_StdMultiWidget->SetWidgetPlanesVisibility(enable);
@@ -254,17 +243,6 @@ bool QmitkStdMultiWidgetEditor::IsSlicingPlanesEnabled() const
   {
     return false;
   }
-}
-
-void QmitkStdMultiWidgetEditor::EnableLinkedNavigation(bool enable)
-{
-  enable ? d->m_StdMultiWidget->EnableNavigationControllerEventListening()
-         : d->m_StdMultiWidget->DisableNavigationControllerEventListening();
-}
-
-bool QmitkStdMultiWidgetEditor::IsLinkedNavigationEnabled() const
-{
-  return d->m_StdMultiWidget->IsCrosshairNavigationEnabled();
 }
 
 void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
@@ -291,8 +269,6 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
     d->m_RenderWindows.insert("3d", d->m_StdMultiWidget->GetRenderWindow4());
 
     d->m_MouseModeToolbar->setMouseModeSwitcher( d->m_StdMultiWidget->GetMouseModeSwitcher() );
-    connect( d->m_MouseModeToolbar, SIGNAL( MouseModeSelected(mitk::MouseModeSwitcher::MouseMode) ),
-      d->m_StdMultiWidget, SLOT( MouseModeSelected(mitk::MouseModeSwitcher::MouseMode) ) );
 
     layout->addWidget(d->m_StdMultiWidget);
 
@@ -317,7 +293,7 @@ void QmitkStdMultiWidgetEditor::CreateQtPartControl(QWidget* parent)
     // in 2D and 3D
     d->m_StdMultiWidget->AddDisplayPlaneSubTree();
 
-    d->m_StdMultiWidget->EnableNavigationControllerEventListening();
+    //d->m_StdMultiWidget->EnableNavigationControllerEventListening();
 
     // Store the initial visibility status of the menu widget.
     d->m_MenuWidgetsEnabled = d->m_StdMultiWidget->IsMenuWidgetEnabled();
@@ -345,11 +321,11 @@ void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferen
   while(currentNode)
   {
     bool logoFound = false;
-    foreach (const QString& key, prefs->Keys())
+    foreach (const QString& key, currentNode->Keys())
     {
       if( key == "DepartmentLogo")
       {
-        QString departmentLogoLocation = prefs->Get("DepartmentLogo", "");
+        QString departmentLogoLocation = currentNode->Get("DepartmentLogo", "");
 
         if (departmentLogoLocation.isEmpty())
         {
@@ -414,10 +390,10 @@ void QmitkStdMultiWidgetEditor::OnPreferencesChanged(const berry::IBerryPreferen
   //refresh colors of rectangles
   d->m_StdMultiWidget->EnableColoredRectangles();
 
-  // Set preferences respecting zooming and padding
-  bool constrainedZooming = prefs->GetBool("Use constrained zooming and padding", true);
+  // Set preferences respecting zooming and panning
+  bool constrainedZooming = prefs->GetBool("Use constrained zooming and panning", true);
 
-  mitk::RenderingManager::GetInstance()->SetConstrainedPaddingZooming(constrainedZooming);
+  mitk::RenderingManager::GetInstance()->SetConstrainedPanningZooming(constrainedZooming);
 
   mitk::RenderingManager::GetInstance()->InitializeViewsByBoundingObjects(this->GetDataStorage());
 
