@@ -83,6 +83,10 @@ void mitk::GeometryDataWriterService::Write()
   {
       WriteSpecific(rootNode, geom3D);
   }
+  else
+  {
+      MITK_WARN << "Geometry type not supported by serialization. Written file may be missing information.";
+  }
 
   // Write out document
   out << doc;
