@@ -241,7 +241,12 @@ QStringList QmitkIOUtil::Save(const std::vector<const mitk::BaseData *> &data,
     }
 
     // Ask the user for a file name
-    QString nextName = QFileDialog::getSaveFileName(parent, dialogTitle, fileName, filterString, &selectedFilter);
+    QString nextName =  QFileDialog::getSaveFileName(parent,
+                                                     dialogTitle,
+                                                     fileName,
+                                                     filterString,
+                                                     &selectedFilter,
+                                                     QFileDialog::DontUseNativeDialog); // added by Ingmar W. to omit native file open crash
 
     if (nextName.isEmpty())
     {
