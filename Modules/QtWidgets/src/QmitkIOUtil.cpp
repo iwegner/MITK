@@ -250,7 +250,8 @@ QStringList QmitkIOUtil::Save(const std::vector<const mitk::BaseData*>& data,
                                                      dialogTitle,
                                                      fileName,
                                                      filterString,
-                                                     &selectedFilter);
+                                                     &selectedFilter,
+                                                     QFileDialog::DontUseNativeDialog); // added my ingmar to omit native file open crash
 
     if (nextName.isEmpty())
     {
