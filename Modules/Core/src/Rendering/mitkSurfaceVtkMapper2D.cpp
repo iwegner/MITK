@@ -269,6 +269,14 @@ void mitk::SurfaceVtkMapper2D::ApplyAllProperties(mitk::BaseRenderer* renderer)
 
   float lineWidth = 1.0f;
   node->GetFloatProperty("line width", lineWidth, renderer);
+  if ( !node->GetFloatProperty("line width", lineWidth, renderer) )
+  {
+    int oldLineWidth = lineWidth;
+    if ( node->GetIntProperty("line width", oldLineWidth, renderer) )
+    {
+      lineWidth = oldLineWidth;
+    }
+  }
 
   LocalStorage* localStorage = m_LSH.GetLocalStorage(renderer);
 
