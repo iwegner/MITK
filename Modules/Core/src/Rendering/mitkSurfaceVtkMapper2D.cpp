@@ -258,25 +258,33 @@ void mitk::SurfaceVtkMapper2D::GenerateDataForRenderer( mitk::BaseRenderer *rend
   }
 }
 
+void mitk::SurfaceVtkMapper2D::FixupLegacyProperties(DataNode* node, const BaseRenderer* renderer)
+{
+  // Before bug 18528, "line width" was an IntProperty, now it is a FloatProperty
+  float lineWidth = 1.0f;
+  if ( !node->GetFloatProperty("line width", lineWidth, renderer) )
+  {
+    int legacyLineWidth = lineWidth;
+    if ( node->GetIntProperty("line width", legacyLineWidth, renderer) )
+    {
+      node->ReplaceProperty("line width", FloatProperty::New(static_cast<float>(legacyLineWidth)));
+    }
+  }
+}
+
 void mitk::SurfaceVtkMapper2D::ApplyAllProperties(mitk::BaseRenderer* renderer)
 {
-  const DataNode * node = GetDataNode();
+  DataNode * node = GetDataNode();
 
   if(node == NULL)
   {
     return;
   }
 
+  FixupLegacyProperties(node, renderer);
+
   float lineWidth = 1.0f;
   node->GetFloatProperty("line width", lineWidth, renderer);
-  if ( !node->GetFloatProperty("line width", lineWidth, renderer) )
-  {
-    int oldLineWidth = lineWidth;
-    if ( node->GetIntProperty("line width", oldLineWidth, renderer) )
-    {
-      lineWidth = oldLineWidth;
-    }
-  }
 
   LocalStorage* localStorage = m_LSH.GetLocalStorage(renderer);
 
