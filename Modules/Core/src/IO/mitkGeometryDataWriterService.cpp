@@ -84,10 +84,6 @@ void mitk::GeometryDataWriterService::Write()
   {
     MITK_WARN << "Serializing GeometryData that does not have a valid ProportionalTimeGeometry! Not implemented!";
   }
-  else
-  {
-      MITK_WARN << "Geometry type not supported by serialization. Written file may be missing information.";
-  }
 
   // Write out document
   out << doc;
