@@ -20,6 +20,9 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkVectorProperty.h"
 #include "mitkBasePropertySerializer.h"
 
+#include <limits>
+#include <math.h>
+
 /**
  \brief Test for VectorPropertySerializer.
 
@@ -62,6 +65,9 @@ public:
     data.push_back( -918273674.6172838 );
     data.push_back( 0 );
     data.push_back( +6172838.918273674 );
+    data.push_back( sqrt(2) );
+    data.push_back( std::numeric_limits<DATATYPE>::infinity() );
+    //data.push_back( std::numeric_limits<DATATYPE>::quiet_NaN() ); // do NOT test this, cannot be == to itself
     vectorProperty->SetValue( data );
 
     return vectorProperty;

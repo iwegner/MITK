@@ -20,6 +20,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkBasePropertySerializer.h"
 
 #include "mitkProperties.h"
+#include "mitkFloatToString.h"
 
 #include <MitkSceneSerializationBaseExports.h>
 
@@ -39,7 +40,7 @@ class DoublePropertySerializer : public BasePropertySerializer
       if (const DoubleProperty* prop = dynamic_cast<const DoubleProperty*>(m_Property.GetPointer()))
       {
         auto  element = new TiXmlElement("double");
-        element->SetDoubleAttribute("value", prop->GetValue());
+        element->SetAttribute("value", DoubleToString(prop->GetValue()));
         return element;
       }
       else return nullptr;
@@ -49,10 +50,10 @@ class DoublePropertySerializer : public BasePropertySerializer
     {
       if (!element) return nullptr;
 
-      double d;
-      if ( element->QueryDoubleAttribute( "value", &d ) == TIXML_SUCCESS )
+      std::string d;
+      if ( element->QueryStringAttribute( "value", &d ) == TIXML_SUCCESS )
       {
-        return DoubleProperty::New(d).GetPointer();
+        return DoubleProperty::New(StringToDouble(d)).GetPointer();
       }
       else
       {
