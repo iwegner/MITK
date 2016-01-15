@@ -18,8 +18,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #define mitkVectorProperty_h
 
 // MITK
-#include "MitkVectorPropertiesExports.h"
-#include "mitkBaseProperty.h"
+#include <MitkCoreExports.h>
+#include <mitkBaseProperty.h>
 
 // STL
 #include <vector>
@@ -53,7 +53,7 @@ struct VectorPropertyDataType {
   comments in code).
 */
 template <typename DATATYPE>
-class MITKVECTORPROPERTIES_EXPORT VectorProperty : public BaseProperty
+class MITKCORE_EXPORT VectorProperty : public BaseProperty
 {
 public:
 
@@ -87,7 +87,14 @@ public:
   itkFactorylessNewMacro(Self);
   itkCloneMacro(Self)
 
-  /// Returns the property value as a std::string
+  /// Returns the property value as a std::string.
+  ///
+  /// Since VectorProperty potentially holds many
+  /// elements, it implements this function in a way
+  /// that only the first and the last couple of
+  /// elements really appear in the string.
+  /// Missing central elements are indicated by
+  /// an ellipsis ("...")
   virtual std::string GetValueAsString() const override;
 
   /// returns a const reference to the contained vector
