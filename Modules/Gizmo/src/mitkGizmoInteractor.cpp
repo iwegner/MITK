@@ -131,7 +131,15 @@ bool mitk::GizmoInteractor::HasPickedHandle(const InteractionEvent* interactionE
 
 
     m_InitialGizmoCenter3D = m_Gizmo->GetCenter();
-    positionEvent->GetSender()->WorldToDisplay( m_InitialGizmoCenter3D, m_InitialGizmoCenter2D );
+    positionEvent->GetSender()->GetDisplayGeometry()->Map( m_InitialGizmoCenter3D, m_InitialGizmoCenter2D ); //! backported from master, was WorldToDisplay()
+
+    renderer->SetWorldPoint(m_InitialGizmoCenter3D[0],
+                            m_InitialGizmoCenter3D[1],
+                            m_InitialGizmoCenter3D[2],
+                            0);
+    renderer->WorldToDisplay();
+    m_InitialGizmoCenter2D[0] = renderer->GetDisplayPoint()[0];
+    m_InitialGizmoCenter2D[1] = renderer->GetDisplayPoint()[1];
 
     m_InitialManipulatedObjectGeometry = m_ManipulatedObjectGeometry->Clone();
 
@@ -188,7 +196,7 @@ bool mitk::GizmoInteractor::HasPickedHandle(const InteractionEvent* interactionE
   }
 }
 
-void mitk::GizmoInteractor::DecideInteraction(StateMachineAction*, InteractionEvent* interactionEvent)
+bool mitk::GizmoInteractor::DecideInteraction(StateMachineAction*, InteractionEvent* interactionEvent)
 {
   assert(m_PickedHandle != Gizmo::NoHandle);
 
@@ -222,14 +230,15 @@ void mitk::GizmoInteractor::DecideInteraction(StateMachineAction*, InteractionEv
   }
 
   interactionEvent->GetSender()->GetDispatcher()->QueueEvent(decision);
+  return true;
 }
 
-void mitk::GizmoInteractor::MoveAlongAxis(StateMachineAction*, InteractionEvent* interactionEvent)
+bool mitk::GizmoInteractor::MoveAlongAxis(StateMachineAction*, InteractionEvent* interactionEvent)
 {
   auto positionEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
   if(positionEvent == NULL)
   {
-    return;
+    return true;
   }
 
   Vector2D axisVector2D = m_InitialClickPosition2D - m_InitialGizmoCenter2D;
@@ -242,15 +251,16 @@ void mitk::GizmoInteractor::MoveAlongAxis(StateMachineAction*, InteractionEvent*
 
   ApplyTranslationToManipulatedObject(movement3D);
   RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+  return true;
 }
 
-void mitk::GizmoInteractor::RotateAroundAxis(StateMachineAction*,
-                                               InteractionEvent* interactionEvent)
+bool mitk::GizmoInteractor::RotateAroundAxis(StateMachineAction*,
+                                             InteractionEvent* interactionEvent)
 {
   auto positionEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
   if(positionEvent == NULL)
   {
-    return;
+    return true;
   }
 
   Vector2D originalVector = m_InitialClickPosition2D - m_InitialGizmoCenter2D;
@@ -264,14 +274,15 @@ void mitk::GizmoInteractor::RotateAroundAxis(StateMachineAction*,
 
   ApplyRotationToManipulatedObject(vtkMath::DegreesFromRadians(angle_rad));
   RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+  return true;
 }
 
-void mitk::GizmoInteractor::MoveFreely(StateMachineAction*, InteractionEvent* interactionEvent)
+bool mitk::GizmoInteractor::MoveFreely(StateMachineAction*, InteractionEvent* interactionEvent)
 {
   auto positionEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
   if(positionEvent == NULL)
   {
-    return;
+    return true;
   }
 
   Point2D currentPosition2D = positionEvent->GetPointerPositionOnScreen();
@@ -286,14 +297,15 @@ void mitk::GizmoInteractor::MoveFreely(StateMachineAction*, InteractionEvent* in
 
   ApplyTranslationToManipulatedObject(movementITK);
   RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+  return true;
 }
 
-void mitk::GizmoInteractor::ScaleEqually(StateMachineAction*, InteractionEvent* interactionEvent)
+bool mitk::GizmoInteractor::ScaleEqually(StateMachineAction*, InteractionEvent* interactionEvent)
 {
   auto positionEvent = dynamic_cast<const InteractionPositionEvent*>(interactionEvent);
   if(positionEvent == NULL)
   {
-    return;
+    return true;
   }
 
   Point2D currentPosition2D = positionEvent->GetPointerPositionOnScreen();
@@ -302,6 +314,7 @@ void mitk::GizmoInteractor::ScaleEqually(StateMachineAction*, InteractionEvent* 
 
   ApplyEqualScalingToManipulatedObject(relativeSize);
   RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+  return true;
 }
 
 
@@ -365,7 +378,7 @@ void mitk::GizmoInteractor::ApplyRotationToManipulatedObject(double angle_deg)
   m_ManipulatedObjectGeometry->Compose( manipulatedGeometry->GetIndexToWorldTransform() );
 }
 
-void mitk::GizmoInteractor::FeedUndoStack(StateMachineAction*, InteractionEvent*)
+bool mitk::GizmoInteractor::FeedUndoStack(StateMachineAction*, InteractionEvent*)
 {
   if (m_UndoEnabled)
   {
@@ -379,6 +392,7 @@ void mitk::GizmoInteractor::FeedUndoStack(StateMachineAction*, InteractionEvent*
     mitk::OperationEvent::ExecuteIncrement();
     m_UndoController->SetOperationEvent(operationEvent);
   }
+  return true;
 }
 
 mitk::Gizmo::HandleType mitk::GizmoInteractor::PickFrom2D(const InteractionPositionEvent* positionEvent)

@@ -85,26 +85,26 @@ private:
 
   //! State machine action: Advances state machine by generating a new event
   //! in function of the picked part of the gizmo.
-  void DecideInteraction(StateMachineAction*, InteractionEvent* interactionEvent);
+  bool DecideInteraction(StateMachineAction*, InteractionEvent* interactionEvent);
 
   //! State machine action: Translates the manipulated object along the picked axis
   //! in function of mouse movement.
-  void MoveAlongAxis(StateMachineAction*, InteractionEvent* interactionEvent);
+  bool MoveAlongAxis(StateMachineAction*, InteractionEvent* interactionEvent);
 
   //! State machine action: Scale the manipulated object equally along all axes
   //! in function of mouse movement.
-  void ScaleEqually(StateMachineAction*, InteractionEvent* interactionEvent);
+  bool ScaleEqually(StateMachineAction*, InteractionEvent* interactionEvent);
 
   //! State machine action: Rotates the manipulated object around the picked axis
   //! in function of mouse movement.
-  void RotateAroundAxis(StateMachineAction*, InteractionEvent* interactionEvent);
+  bool RotateAroundAxis(StateMachineAction*, InteractionEvent* interactionEvent);
 
   //! State machine action: Moves the manipulated object parallel to the camera view plane
   //! in function of mouse movement.
-  void MoveFreely(StateMachineAction*, InteractionEvent* interactionEvent);
+  bool MoveFreely(StateMachineAction*, InteractionEvent* interactionEvent);
 
   //! Add the final transformation operations to the undo stack
-  void FeedUndoStack(StateMachineAction*, InteractionEvent* interactionEvent);
+  bool FeedUndoStack(StateMachineAction*, InteractionEvent* interactionEvent);
 
   //! Applies a calculated translation vector to the manipulated object.
   void ApplyTranslationToManipulatedObject(const Vector3D& projectedMovement);

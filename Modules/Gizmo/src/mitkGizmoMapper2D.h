@@ -19,6 +19,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <mitkVtkMapper.h>
 
+#include <vtkSmartPointer.h>
 #include <vtkPainterPolyDataMapper.h>
 
 namespace mitk
