@@ -21,6 +21,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkClippingProperty.h"
 #include "mitkNumericTypes.h"
+#include "mitkFloatToString.h"
 
 namespace mitk
 {
@@ -42,15 +43,15 @@ class ClippingPropertySerializer : public BasePropertySerializer
           element->SetAttribute("enabled", "false");
         auto  originElement = new TiXmlElement("origin");
         const Point3D origin = prop->GetOrigin();
-        originElement->SetDoubleAttribute("x", origin[0]);
-        originElement->SetDoubleAttribute("y", origin[1]);
-        originElement->SetDoubleAttribute("z", origin[2]);
+        originElement->SetAttribute("x", DoubleToString(origin[0]));
+        originElement->SetAttribute("y", DoubleToString(origin[1]));
+        originElement->SetAttribute("z", DoubleToString(origin[2]));
         element->LinkEndChild(originElement);
         auto  normalElement = new TiXmlElement("normal");
         const Vector3D normal = prop->GetNormal();
-        normalElement->SetDoubleAttribute("x", normal[0]);
-        normalElement->SetDoubleAttribute("y", normal[1]);
-        normalElement->SetDoubleAttribute("z", normal[2]);
+        normalElement->SetAttribute("x", DoubleToString(normal[0]));
+        normalElement->SetAttribute("y", DoubleToString(normal[1]));
+        normalElement->SetAttribute("z", DoubleToString(normal[2]));
         element->LinkEndChild(normalElement);
         return element;
       }
@@ -67,23 +68,27 @@ class ClippingPropertySerializer : public BasePropertySerializer
       TiXmlElement* originElement = element->FirstChildElement("origin");
       if (originElement == nullptr)
         return nullptr;
+      std::string origin_string[3];
+      if ( originElement->QueryStringAttribute( "x", &origin_string[0] ) != TIXML_SUCCESS )
+        return nullptr;
+      if ( originElement->QueryStringAttribute( "y", &origin_string[1] ) != TIXML_SUCCESS )
+        return nullptr;
+      if ( originElement->QueryStringAttribute( "z", &origin_string[2] ) != TIXML_SUCCESS )
+        return nullptr;
       Point3D origin;
-      if ( originElement->QueryDoubleAttribute( "x", &origin[0] ) != TIXML_SUCCESS )
-        return nullptr;
-      if ( originElement->QueryDoubleAttribute( "y", &origin[1] ) != TIXML_SUCCESS )
-        return nullptr;
-      if ( originElement->QueryDoubleAttribute( "z", &origin[2] ) != TIXML_SUCCESS )
-        return nullptr;
+      StringsToDoubles(3, origin_string, origin);
       TiXmlElement* normalElement = element->FirstChildElement("normal");
       if (normalElement == nullptr)
         return nullptr;
+      std::string normal_string[3];
+      if ( normalElement->QueryStringAttribute( "x", &normal_string[0] ) != TIXML_SUCCESS )
+        return nullptr;
+      if ( normalElement->QueryStringAttribute( "y", &normal_string[1] ) != TIXML_SUCCESS )
+        return nullptr;
+      if ( normalElement->QueryStringAttribute( "z", &normal_string[2] ) != TIXML_SUCCESS )
+        return nullptr;
       Vector3D normal;
-      if ( normalElement->QueryDoubleAttribute( "x", &normal[0] ) != TIXML_SUCCESS )
-        return nullptr;
-      if ( normalElement->QueryDoubleAttribute( "y", &normal[1] ) != TIXML_SUCCESS )
-        return nullptr;
-      if ( normalElement->QueryDoubleAttribute( "z", &normal[2] ) != TIXML_SUCCESS )
-        return nullptr;
+      StringsToDoubles(3, normal_string, normal);
       ClippingProperty::Pointer cp = ClippingProperty::New(origin, normal);
       cp->SetClippingEnabled(enabled);
      return cp.GetPointer();

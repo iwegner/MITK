@@ -15,6 +15,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 ===================================================================*/
 
 #include "mitkTransferFunctionPropertySerializer.h"
+#include "mitkFloatToString.h"
 
 namespace mitk {
 
@@ -45,8 +46,8 @@ TiXmlElement* mitk::TransferFunctionPropertySerializer::Serialize()
       ++iter )
     {
       auto  pointel = new TiXmlElement("point");
-      pointel->SetDoubleAttribute("x", iter->first);
-      pointel->SetDoubleAttribute("y", iter->second);
+      pointel->SetAttribute("x", DoubleToString(iter->first));
+      pointel->SetAttribute("y", DoubleToString(iter->second));
       scalarOpacityPointlist->LinkEndChild( pointel );
     }
     element->LinkEndChild( scalarOpacityPointlist );
@@ -58,8 +59,8 @@ TiXmlElement* mitk::TransferFunctionPropertySerializer::Serialize()
       ++iter )
     {
       auto  pointel = new TiXmlElement("point");
-      pointel->SetDoubleAttribute("x", iter->first);
-      pointel->SetDoubleAttribute("y", iter->second);
+      pointel->SetAttribute("x", DoubleToString(iter->first));
+      pointel->SetAttribute("y", DoubleToString(iter->second));
       gradientOpacityPointlist->LinkEndChild( pointel );
     }
     element->LinkEndChild( gradientOpacityPointlist );
@@ -74,12 +75,12 @@ TiXmlElement* mitk::TransferFunctionPropertySerializer::Serialize()
       double myVal[6];
       ctf->GetNodeValue(i, myVal);
       auto  pointel = new TiXmlElement("point");
-      pointel->SetDoubleAttribute("x", myVal[0]);
-      pointel->SetDoubleAttribute("r", myVal[1]);
-      pointel->SetDoubleAttribute("g", myVal[2]);
-      pointel->SetDoubleAttribute("b", myVal[3]);
-      pointel->SetDoubleAttribute("midpoint", myVal[4]);
-      pointel->SetDoubleAttribute("sharpness", myVal[5]);
+      pointel->SetAttribute("x", DoubleToString(myVal[0]));
+      pointel->SetAttribute("r", DoubleToString(myVal[1]));
+      pointel->SetAttribute("g", DoubleToString(myVal[2]));
+      pointel->SetAttribute("b", DoubleToString(myVal[3]));
+      pointel->SetAttribute("midpoint", DoubleToString(myVal[4]));
+      pointel->SetAttribute("sharpness", DoubleToString(myVal[5]));
       pointlist->LinkEndChild( pointel );
     }
     element->LinkEndChild( pointlist );
@@ -134,13 +135,11 @@ BaseProperty::Pointer mitk::TransferFunctionPropertySerializer::Deserialize(TiXm
 
   for( TiXmlElement* pointElement = scalarOpacityPointlist->FirstChildElement("point"); pointElement != nullptr; pointElement = pointElement->NextSiblingElement("point"))
   {
-    double x;
-    double y;
-    if (pointElement->QueryDoubleAttribute("x", &x) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    if (pointElement->QueryDoubleAttribute("y", &y) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    tf->AddScalarOpacityPoint(x, y);
+    std::string x;
+    std::string y;
+    if (pointElement->QueryStringAttribute("x", &x) != TIXML_SUCCESS) return nullptr;
+    if (pointElement->QueryStringAttribute("y", &y) != TIXML_SUCCESS) return nullptr;
+    tf->AddScalarOpacityPoint(StringToDouble(x), StringToDouble(y));
   }
 
   TiXmlElement* gradientOpacityPointlist = element->FirstChildElement("GradientOpacity");
@@ -151,13 +150,11 @@ BaseProperty::Pointer mitk::TransferFunctionPropertySerializer::Deserialize(TiXm
 
   for( TiXmlElement* pointElement = gradientOpacityPointlist->FirstChildElement("point"); pointElement != nullptr; pointElement = pointElement->NextSiblingElement("point"))
   {
-    double x;
-    double y;
-    if (pointElement->QueryDoubleAttribute("x", &x) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    if (pointElement->QueryDoubleAttribute("y", &y) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    tf->AddGradientOpacityPoint(x, y);
+    std::string x;
+    std::string y;
+    if (pointElement->QueryStringAttribute("x", &x) != TIXML_SUCCESS) return nullptr;
+    if (pointElement->QueryStringAttribute("y", &y) != TIXML_SUCCESS) return nullptr;
+    tf->AddGradientOpacityPoint(StringToDouble(x), StringToDouble(y));
   }
 
   TiXmlElement* rgbPointlist = element->FirstChildElement("Color");
@@ -171,21 +168,18 @@ BaseProperty::Pointer mitk::TransferFunctionPropertySerializer::Deserialize(TiXm
 
   for( TiXmlElement* pointElement = rgbPointlist->FirstChildElement("point"); pointElement != nullptr; pointElement = pointElement->NextSiblingElement("point"))
   {
-    double x;
-    double r,g,b, midpoint, sharpness;
-    if (pointElement->QueryDoubleAttribute("x", &x) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    if (pointElement->QueryDoubleAttribute("r", &r) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    if (pointElement->QueryDoubleAttribute("g", &g) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    if (pointElement->QueryDoubleAttribute("b", &b) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    if (pointElement->QueryDoubleAttribute("midpoint", &midpoint) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    if (pointElement->QueryDoubleAttribute("sharpness", &sharpness) == TIXML_WRONG_TYPE)
-      return nullptr; // TODO: can we do a better error handling?
-    ctf->AddRGBPoint(x, r, g, b, midpoint, sharpness);
+    std::string x;
+    std::string r,g,b, midpoint, sharpness;
+    if (pointElement->QueryStringAttribute("x", &x) != TIXML_SUCCESS) return nullptr;
+    if (pointElement->QueryStringAttribute("r", &r) != TIXML_SUCCESS) return nullptr;
+    if (pointElement->QueryStringAttribute("g", &g) != TIXML_SUCCESS) return nullptr;
+    if (pointElement->QueryStringAttribute("b", &b) != TIXML_SUCCESS) return nullptr;
+    if (pointElement->QueryStringAttribute("midpoint", &midpoint) != TIXML_SUCCESS) return nullptr;
+    if (pointElement->QueryStringAttribute("sharpness", &sharpness) != TIXML_SUCCESS) return nullptr;
+    ctf->AddRGBPoint(StringToDouble(x),
+                     StringToDouble(r), StringToDouble(g), StringToDouble(b),
+                     StringToDouble(midpoint),
+                     StringToDouble(sharpness));
   }
   return TransferFunctionProperty::New(tf).GetPointer();
 }
