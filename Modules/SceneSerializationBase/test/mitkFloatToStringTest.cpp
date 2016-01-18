@@ -25,9 +25,10 @@ See LICENSE.txt or http://www.mitk.org for details.
 class mitkFloatToStringTestSuite : public mitk::TestFixture
 {
   CPPUNIT_TEST_SUITE(mitkFloatToStringTestSuite);
+    MITK_TEST(ConfirmStringValuesFloat);
+    MITK_TEST(ConfirmStringValuesDouble);
     MITK_TEST(TestConversionsFloat);
     MITK_TEST(TestConversionsDouble);
-    MITK_TEST(ConfirmStringValuesFloat);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -60,14 +61,12 @@ public:
       CPPUNIT_ASSERT_EQUAL( -std::numeric_limits<float>::infinity(), minus_inf );
 
       std::string s_nan = mitk::FloatToString( std::numeric_limits<float>::quiet_NaN() );
-      CPPUNIT_ASSERT_EQUAL( s_nan, std::string("nan") );
-
+      CPPUNIT_ASSERT_EQUAL( std::string("nan"), s_nan );
       std::string s_inf = mitk::FloatToString( std::numeric_limits<float>::infinity() );
-      CPPUNIT_ASSERT_EQUAL( s_inf, std::string("inf") );
-
+      CPPUNIT_ASSERT_EQUAL( std::string("inf"), s_inf );
       std::string s_minus_inf = mitk::FloatToString( -std::numeric_limits<float>::infinity() );
-      CPPUNIT_ASSERT_EQUAL( s_inf, std::string("-inf") );
-  }
+      CPPUNIT_ASSERT_EQUAL( std::string("-inf"), s_minus_inf );
+}
 
   void ConfirmStringValuesDouble()
   {
@@ -83,13 +82,11 @@ public:
       CPPUNIT_ASSERT_EQUAL( -std::numeric_limits<double>::infinity(), minus_inf );
 
       std::string s_nan = mitk::DoubleToString( std::numeric_limits<double>::quiet_NaN() );
-      CPPUNIT_ASSERT_EQUAL( s_nan, std::string("nan") );
-
+      CPPUNIT_ASSERT_EQUAL( std::string("nan"), s_nan );
       std::string s_inf = mitk::DoubleToString( std::numeric_limits<double>::infinity() );
-      CPPUNIT_ASSERT_EQUAL( s_inf, std::string("inf") );
-
+      CPPUNIT_ASSERT_EQUAL( std::string("inf"), s_inf );
       std::string s_minus_inf = mitk::DoubleToString( -std::numeric_limits<double>::infinity() );
-      CPPUNIT_ASSERT_EQUAL( s_inf, std::string("-inf") );
+      CPPUNIT_ASSERT_EQUAL( std::string("-inf"), s_minus_inf );
   }
 
 

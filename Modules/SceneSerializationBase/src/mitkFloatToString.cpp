@@ -17,29 +17,48 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkFloatToString.h"
 
 // number to string
-#include <itkNumberToString.h>
-
-// string to number
-#include <cstdlib>
+#include <boost/lexical_cast.hpp>
 
 std::string mitk::FloatToString(float f)
 {
-  itk::NumberToString<float> converter;
-  return converter(f);
+  return boost::lexical_cast<std::string, float>(f);
 }
 
 float mitk::StringToFloat(const std::string& s)
 {
-  return std::atof(s.c_str());
+  try
+  {
+    return boost::lexical_cast<float>(s);
+  }
+  catch (boost::bad_lexical_cast&)
+  {
+    // boost accepts only "infinity"
+    if (s == "-inf" || s == "-INF")
+        return std::numeric_limits<float>::infinity();
+    if (s == "inf" || s == "INF")
+        return std::numeric_limits<float>::infinity();
+    return std::numeric_limits<float>::quiet_NaN();
+  }
 }
 
 std::string mitk::DoubleToString(double d)
 {
-  itk::NumberToString<double> converter;
-  return converter(d);
+  return boost::lexical_cast<std::string, double>(d);
 }
 
 double mitk::StringToDouble(const std::string& s)
 {
-  return std::strtod(s.c_str(),nullptr);
+  try
+  {
+    return boost::lexical_cast<double>(s);
+  }
+  catch (boost::bad_lexical_cast&)
+  {
+    // boost accepts only "infinity"
+    if (s == "-inf" || s == "-INF")
+        return std::numeric_limits<float>::infinity();
+    if (s == "inf" || s == "INF")
+        return std::numeric_limits<float>::infinity();
+    return std::numeric_limits<float>::quiet_NaN();
+  }
 }
