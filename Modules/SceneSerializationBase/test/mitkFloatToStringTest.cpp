@@ -27,6 +27,7 @@ class mitkFloatToStringTestSuite : public mitk::TestFixture
   CPPUNIT_TEST_SUITE(mitkFloatToStringTestSuite);
     MITK_TEST(TestConversionsFloat);
     MITK_TEST(TestConversionsDouble);
+    MITK_TEST(ConfirmStringValuesFloat);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -47,23 +48,56 @@ public:
     CPPUNIT_ASSERT_EQUAL(input, result);
   }
 
-  void TestConversionsFloat()
+  void ConfirmStringValuesFloat()
   {
       float nan = mitk::StringToFloat("nan");
       float inf = mitk::StringToFloat("inf");
       float minus_inf = mitk::StringToFloat("-inf");
 
-      float ref_inf = std::numeric_limits<float>::infinity();
-      float ref_minus_inf = -std::numeric_limits<float>::infinity();
       CPPUNIT_ASSERT_MESSAGE("nan==nan must be false", !(nan==nan) );
-      float not_parsed = mitk::StringToFloat("quark");
-      CPPUNIT_ASSERT(!(not_parsed == not_parsed)); // we expect NaN
-      CPPUNIT_ASSERT_EQUAL( ref_inf, inf);
-      CPPUNIT_ASSERT_EQUAL( ref_minus_inf, minus_inf);
+      float ref_minus_inf = -std::numeric_limits<float>::infinity();
+      CPPUNIT_ASSERT_EQUAL( std::numeric_limits<float>::infinity(), inf );
+      CPPUNIT_ASSERT_EQUAL( -std::numeric_limits<float>::infinity(), minus_inf );
 
+      std::string s_nan = mitk::FloatToString( std::numeric_limits<float>::quiet_NaN() );
+      CPPUNIT_ASSERT_EQUAL( s_nan, std::string("nan") );
+
+      std::string s_inf = mitk::FloatToString( std::numeric_limits<float>::infinity() );
+      CPPUNIT_ASSERT_EQUAL( s_inf, std::string("inf") );
+
+      std::string s_minus_inf = mitk::FloatToString( -std::numeric_limits<float>::infinity() );
+      CPPUNIT_ASSERT_EQUAL( s_inf, std::string("-inf") );
+  }
+
+  void ConfirmStringValuesDouble()
+  {
+      // we want to make sure that the following strings will be accepted and returned
+      // by our conversion functions. This must not change in the future to ensure compatibility
+      double nan = mitk::StringToDouble("nan");
+      double inf = mitk::StringToDouble("inf");
+      double minus_inf = mitk::StringToDouble("-inf");
+
+      CPPUNIT_ASSERT_MESSAGE("nan==nan must be false", !(nan==nan) );
+      double ref_minus_inf = -std::numeric_limits<double>::infinity();
+      CPPUNIT_ASSERT_EQUAL( std::numeric_limits<double>::infinity(), inf );
+      CPPUNIT_ASSERT_EQUAL( -std::numeric_limits<double>::infinity(), minus_inf );
+
+      std::string s_nan = mitk::DoubleToString( std::numeric_limits<double>::quiet_NaN() );
+      CPPUNIT_ASSERT_EQUAL( s_nan, std::string("nan") );
+
+      std::string s_inf = mitk::DoubleToString( std::numeric_limits<double>::infinity() );
+      CPPUNIT_ASSERT_EQUAL( s_inf, std::string("inf") );
+
+      std::string s_minus_inf = mitk::DoubleToString( -std::numeric_limits<double>::infinity() );
+      CPPUNIT_ASSERT_EQUAL( s_inf, std::string("-inf") );
+  }
+
+
+  void TestConversionsFloat()
+  {
       // we cannot test the NaN roundtrip because nan == nan will never be true
-      CheckRoundTrip_Float(inf);
-      CheckRoundTrip_Float(minus_inf);
+      CheckRoundTrip_Float(std::numeric_limits<float>::infinity());
+      CheckRoundTrip_Float(-std::numeric_limits<float>::infinity());
 
       CheckRoundTrip_Float(std::numeric_limits<float>::denorm_min());
       CheckRoundTrip_Float(std::numeric_limits<float>::epsilon());
@@ -82,25 +116,11 @@ public:
     CPPUNIT_ASSERT_EQUAL(input, result);
   }
 
-
   void TestConversionsDouble()
   {
-      double nan = mitk::StringToDouble("nan");
-      double inf = mitk::StringToDouble("inf");
-      double minus_inf = mitk::StringToDouble("-inf");
-
-      double ref_inf = std::numeric_limits<double>::infinity();
-      double ref_minus_inf = -std::numeric_limits<double>::infinity();
-      CPPUNIT_ASSERT_MESSAGE("nan==nan must be false", !(nan==nan) );
-      CPPUNIT_ASSERT_EQUAL( std::string("nan"), mitk::DoubleToString(nan) );
-      double not_parsed = mitk::StringToDouble("quark");
-      CPPUNIT_ASSERT(!(not_parsed == not_parsed)); // we expect NaN
-      CPPUNIT_ASSERT_EQUAL( ref_inf, inf);
-      CPPUNIT_ASSERT_EQUAL( ref_minus_inf, minus_inf);
-
       // we cannot test the NaN roundtrip because nan == nan will never be true
-      CheckRoundTrip_Double(inf);
-      CheckRoundTrip_Double(minus_inf);
+      CheckRoundTrip_Double(std::numeric_limits<double>::infinity());
+      CheckRoundTrip_Double(-std::numeric_limits<double>::infinity());
 
       CheckRoundTrip_Double(std::numeric_limits<double>::denorm_min());
       CheckRoundTrip_Double(std::numeric_limits<double>::epsilon());
@@ -111,6 +131,7 @@ public:
       CheckRoundTrip_Double(0.0);
       CheckRoundTrip_Double(-0.0);
   }
+
 }; // class
 
 MITK_TEST_SUITE_REGISTRATION(mitkFloatToString)

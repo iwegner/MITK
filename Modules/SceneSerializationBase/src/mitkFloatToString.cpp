@@ -16,25 +16,30 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkFloatToString.h"
 
-#include <Poco/NumberFormatter.h>
-#include <Poco/NumericString.h>
+// number to string
+#include <itkNumberToString.h>
+
+// string to number
+#include <cstdlib>
 
 std::string mitk::FloatToString(float f)
 {
-  return Poco::NumberFormatter::format(f);
+  itk::NumberToString<float> converter;
+  return converter(f);
 }
 
 float mitk::StringToFloat(const std::string& s)
 {
-  return Poco::strToFloat(s.c_str());
+  return std::atof(s.c_str());
 }
 
 std::string mitk::DoubleToString(double d)
 {
-  return Poco::NumberFormatter::format(d);
+  itk::NumberToString<double> converter;
+  return converter(d);
 }
 
 double mitk::StringToDouble(const std::string& s)
 {
-  return Poco::strToDouble(s.c_str());
+  return std::strtod(s.c_str(),nullptr);
 }
