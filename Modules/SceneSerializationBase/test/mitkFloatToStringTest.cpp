@@ -19,11 +19,14 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkFloatToString.h"
 
-#include <limits>
 #include <math.h>
 #include "mitkEqual.h"
 
 #include "mitkLog.h"
+
+
+#include <limits>
+#include <functional>
 
 //!
 //! Verifies functions FloatToString, DoubleToString and inverse
@@ -39,60 +42,109 @@ See LICENSE.txt or http://www.mitk.org for details.
 class mitkFloatToStringTestSuite : public mitk::TestFixture
 {
   CPPUNIT_TEST_SUITE(mitkFloatToStringTestSuite);
-    MITK_TEST(ConfirmStringValuesFloat);
-    MITK_TEST(TestConversionsFloat);
-    MITK_TEST(ConfirmStringValuesDouble);
-    MITK_TEST(TestConversionsDouble);
+    MITK_TEST(ConfirmStringValues);
+    MITK_TEST(TestConversions);
     MITK_TEST(TestPrecisionParameter);
   CPPUNIT_TEST_SUITE_END();
 
 public:
 
-  //-------------------- float --------------------
+  template <typename DATATYPE>
+  void ConfirmNumberToString(DATATYPE number,
+                             const std::string& s,
+                             std::function<std::string(DATATYPE)> to_string)
 
-  void ConfirmStringToFloat(const std::string& s, float number)
   {
-      CPPUNIT_ASSERT_EQUAL( number,  mitk::StringToFloat(s) );
+      CPPUNIT_ASSERT_EQUAL( to_string(number), s );
   }
 
-  void ConfirmFloatToString(float number, const std::string& s)
+
+  template <typename DATATYPE>
+  void ConfirmStringToNumber(const std::string& s,
+                             DATATYPE number,
+                             std::function<DATATYPE(const std::string&)> from_string)
+
   {
-      CPPUNIT_ASSERT_EQUAL( mitk::StringToFloat(s), number );
+      CPPUNIT_ASSERT_EQUAL( number,  from_string(s) );
   }
 
-  void ConfirmStringValuesFloat()
+  template <typename DATATYPE>
+  void ConfirmStringValues(std::function<DATATYPE(const std::string&)> from_string,
+                           std::function<std::string(DATATYPE)> to_string)
   {
-      // we want to make sure that the following strings will be accepted and returned
-      // by our conversion functions. This must not change in the future to ensure compatibility
-      float nan = mitk::StringToFloat("nan");
-      CPPUNIT_ASSERT_MESSAGE("nan==nan must be false", !(nan==nan) );
-      nan = mitk::StringToFloat("NAN");
-      CPPUNIT_ASSERT_MESSAGE("NAN==NAN must be false", !(nan==nan) );
+    // we want to make sure that the following strings will be accepted and returned
+    // by our conversion functions. This must not change in the future to ensure compatibility
+    DATATYPE nan = from_string("nan");
+    CPPUNIT_ASSERT_MESSAGE("nan==nan must be false", !(nan==nan) );
+    nan = from_string("NAN");
+    CPPUNIT_ASSERT_MESSAGE("NAN==NAN must be false", !(nan==nan) );
 
-      std::string s_nan = mitk::FloatToString(nan);
-      CPPUNIT_ASSERT_EQUAL(std::string("nan"), s_nan);
+    std::string s_nan = to_string(nan);
+    CPPUNIT_ASSERT_EQUAL(std::string("nan"), s_nan);
 
+    ConfirmStringToNumber("inf", std::numeric_limits<DATATYPE>::infinity(), from_string);
+    ConfirmStringToNumber("INF", std::numeric_limits<DATATYPE>::infinity(), from_string);
+    ConfirmStringToNumber("infinity", std::numeric_limits<DATATYPE>::infinity(), from_string);
+    ConfirmStringToNumber("INFINITY", std::numeric_limits<DATATYPE>::infinity(), from_string);
 
-      ConfirmStringToFloat("inf", std::numeric_limits<float>::infinity());
-      ConfirmStringToFloat("INF", std::numeric_limits<float>::infinity());
-      ConfirmStringToFloat("infinity", std::numeric_limits<float>::infinity());
-      ConfirmStringToFloat("INFINITY", std::numeric_limits<float>::infinity());
+    ConfirmStringToNumber("-inf", -std::numeric_limits<DATATYPE>::infinity(), from_string);
+    ConfirmStringToNumber("-INF", -std::numeric_limits<DATATYPE>::infinity(), from_string);
+    ConfirmStringToNumber("-infinity", -std::numeric_limits<DATATYPE>::infinity(), from_string);
+    ConfirmStringToNumber("-INFINITY", -std::numeric_limits<DATATYPE>::infinity(), from_string);
 
-      ConfirmStringToFloat("-inf", -std::numeric_limits<float>::infinity());
-      ConfirmStringToFloat("-INF", -std::numeric_limits<float>::infinity());
-      ConfirmStringToFloat("-infinity", -std::numeric_limits<float>::infinity());
-      ConfirmStringToFloat("-INFINITY", -std::numeric_limits<float>::infinity());
-
-      ConfirmFloatToString(std::numeric_limits<float>::infinity(), "inf");
-      ConfirmFloatToString(-std::numeric_limits<float>::infinity(), "-inf");
+    ConfirmNumberToString(std::numeric_limits<DATATYPE>::infinity(), "inf", to_string);
+    ConfirmNumberToString(-std::numeric_limits<DATATYPE>::infinity(), "-inf", to_string);
   }
 
-  void CheckRoundTrip_Float(float input)
+  void ConfirmStringValues()
   {
-    std::string s = mitk::FloatToString(input);
-    float result = mitk::StringToFloat(s);
-    CPPUNIT_ASSERT_EQUAL(input, result);
+    std::function<std::string(float)> float_to_string = std::bind(mitk::FloatToString, std::placeholders::_1, 16);
+    ConfirmStringValues<float>(mitk::StringToFloat, float_to_string);
+
+    std::function<std::string(double)> double_to_string = std::bind(mitk::DoubleToString, std::placeholders::_1, 16);
+    ConfirmStringValues<double>(mitk::StringToDouble, double_to_string);
   }
+
+
+
+
+  template <typename DATATYPE>
+  void CheckRoundTrip(DATATYPE number,
+                      std::function<DATATYPE(const std::string&)> from_string,
+                      std::function<std::string(DATATYPE)> to_string)
+  {
+    std::string s = to_string(number);
+    DATATYPE number2 = from_string(s);
+
+    CPPUNIT_ASSERT_MESSAGE(std::string("Must not parse string ") + s + " as NaN", number2 == number2);
+
+    CPPUNIT_ASSERT(mitk::Equal(number, number2));
+  }
+
+  template <typename DATATYPE>
+  void TestConversions(std::function<DATATYPE(const std::string&)> from_string,
+                       std::function<std::string(DATATYPE)> to_string)
+  {
+    auto check_roundtrip = std::bind(&mitkFloatToStringTestSuite::CheckRoundTrip<DATATYPE>, this,
+                                    std::placeholders::_1, from_string, to_string);
+
+    // we cannot test the NaN roundtrip because nan == nan will never be true
+    check_roundtrip(std::numeric_limits<DATATYPE>::infinity());
+    check_roundtrip(-std::numeric_limits<DATATYPE>::infinity());
+
+    check_roundtrip(std::numeric_limits<DATATYPE>::denorm_min());
+    check_roundtrip(std::numeric_limits<DATATYPE>::epsilon());
+    //check_roundtrip(std::numeric_limits<DATATYPE>::lowest());
+    //check_roundtrip(std::numeric_limits<DATATYPE>::min());
+    //check_roundtrip(std::numeric_limits<DATATYPE>::max());
+    check_roundtrip(sqrt(2));
+    check_roundtrip(0.000000042);
+    check_roundtrip(422345678.2345678);
+    check_roundtrip(0.0);
+    check_roundtrip(-0.0);
+  }
+
+
 
   void CheckRoundTrip_Float(const std::string& input)
   {
@@ -105,75 +157,7 @@ public:
     CPPUNIT_ASSERT(mitk::Equal(f, f2));
   }
 
-
-  void TestConversionsFloat()
-  {
-      // we cannot test the NaN roundtrip because nan == nan will never be true
-      CheckRoundTrip_Float(std::numeric_limits<float>::infinity());
-      CheckRoundTrip_Float(-std::numeric_limits<float>::infinity());
-
-      CheckRoundTrip_Float(std::numeric_limits<float>::denorm_min());
-      CheckRoundTrip_Float(std::numeric_limits<float>::epsilon());
-      CheckRoundTrip_Float(std::numeric_limits<float>::lowest());
-      CheckRoundTrip_Float(std::numeric_limits<float>::min());
-      CheckRoundTrip_Float(std::numeric_limits<float>::max());
-      CheckRoundTrip_Float(sqrt(2));
-      CheckRoundTrip_Float(0.000000042);
-      CheckRoundTrip_Float(422345678.2345678);
-      CheckRoundTrip_Float(0.0);
-      CheckRoundTrip_Float(-0.0);
-
-      CheckRoundTrip_Float("1");
-      CheckRoundTrip_Float("1.1");
-      CheckRoundTrip_Float("1.12121212");
-      CheckRoundTrip_Float("1.1e-2");
-  }
-
   //-------------------- double --------------------
-
-  void ConfirmStringToDouble(const std::string& s, double number)
-  {
-      CPPUNIT_ASSERT_EQUAL( number,  mitk::StringToDouble(s) );
-  }
-
-  void ConfirmDoubleToString(double number, const std::string& s)
-  {
-      CPPUNIT_ASSERT_EQUAL( mitk::StringToDouble(s), number );
-  }
-
-  void ConfirmStringValuesDouble()
-  {
-      // we want to make sure that the following strings will be accepted and returned
-      // by our conversion functions. This must not change in the future to ensure compatibility
-      double nan = mitk::StringToDouble("nan");
-      CPPUNIT_ASSERT_MESSAGE("nan==nan must be false", !(nan==nan) );
-      nan = mitk::StringToDouble("NAN");
-      CPPUNIT_ASSERT_MESSAGE("NAN==NAN must be false", !(nan==nan) );
-
-      std::string s_nan = mitk::DoubleToString(nan);
-      CPPUNIT_ASSERT_EQUAL(std::string("nan"), s_nan);
-
-      ConfirmStringToDouble("inf", std::numeric_limits<double>::infinity());
-      ConfirmStringToDouble("INF", std::numeric_limits<double>::infinity());
-      ConfirmStringToDouble("infinity", std::numeric_limits<double>::infinity());
-      ConfirmStringToDouble("INFINITY", std::numeric_limits<double>::infinity());
-
-      ConfirmStringToDouble("-inf", -std::numeric_limits<double>::infinity());
-      ConfirmStringToDouble("-INF", -std::numeric_limits<double>::infinity());
-      ConfirmStringToDouble("-infinity", -std::numeric_limits<double>::infinity());
-      ConfirmStringToDouble("-INFINITY", -std::numeric_limits<double>::infinity());
-
-      ConfirmDoubleToString(std::numeric_limits<double>::infinity(), "inf");
-      ConfirmDoubleToString(-std::numeric_limits<double>::infinity(), "-inf");
-  }
-
-  void CheckRoundTrip_Double(double input)
-  {
-    std::string s = mitk::DoubleToString(input);
-    double result = mitk::StringToDouble(s);
-    CPPUNIT_ASSERT(mitk::Equal(input, result));
-  }
-
   void CheckRoundTrip_Double(const std::string& input)
   {
     double d = mitk::StringToDouble(input);
@@ -185,28 +169,24 @@ public:
     CPPUNIT_ASSERT(mitk::Equal(d, d2));
   }
 
-  void TestConversionsDouble()
+  void TestConversions()
   {
-      // we cannot test the NaN roundtrip because nan == nan will never be true
-      CheckRoundTrip_Double(std::numeric_limits<double>::infinity());
-      CheckRoundTrip_Double(-std::numeric_limits<double>::infinity());
+    std::function<std::string(float)> float_to_string = std::bind(mitk::FloatToString, std::placeholders::_1, 16);
+    TestConversions<float>(mitk::StringToFloat, float_to_string);
 
-      CheckRoundTrip_Double(std::numeric_limits<double>::denorm_min());
-      CheckRoundTrip_Double(std::numeric_limits<double>::epsilon());
-      CheckRoundTrip_Double(std::numeric_limits<double>::lowest());
+    std::function<std::string(double)> double_to_string = std::bind(mitk::DoubleToString, std::placeholders::_1, 16);
+    TestConversions<double>(mitk::StringToDouble, double_to_string);
 
-      CheckRoundTrip_Double(std::numeric_limits<double>::min());
-      CheckRoundTrip_Double(std::numeric_limits<double>::max());
-      CheckRoundTrip_Double(sqrt(2));
-      CheckRoundTrip_Double(0.000000042);
-      CheckRoundTrip_Double(422345678.2345678);
-      CheckRoundTrip_Double(0.0);
-      CheckRoundTrip_Double(-0.0);
 
-      CheckRoundTrip_Double("1");
-      CheckRoundTrip_Double("1.1");
-      CheckRoundTrip_Double("1.12121212");
-      CheckRoundTrip_Double("1.1e-2");
+    CheckRoundTrip_Float("1");
+    CheckRoundTrip_Float("1.1");
+    CheckRoundTrip_Float("1.12121212");
+    CheckRoundTrip_Float("1.1e-2");
+
+    CheckRoundTrip_Double("1");
+    CheckRoundTrip_Double("1.1");
+    CheckRoundTrip_Double("1.12121212");
+    CheckRoundTrip_Double("1.1e-2");
   }
 
   void TestPrecisionParameter()
