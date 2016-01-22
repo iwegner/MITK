@@ -80,6 +80,9 @@ public:
   itkFactorylessNewMacro(Self);
   itkCloneMacro(Self)
 
+  //! Default implementation, used for everything but double.
+  //! For double, see template specializations at the bottom of
+  //! mitkVectorPropertySerializer.h
   std::string ToString(DATATYPE value)
   {
     std::stringstream valueS;
@@ -88,6 +91,7 @@ public:
     return valueS.str();
   }
 
+  //! Build an XML version of this property
   virtual TiXmlElement* Serialize() override
   {
     auto listElement = new TiXmlElement( "Values" );
@@ -115,6 +119,9 @@ public:
     }
   }
 
+  //! Default implementation, used for everything but float/double.
+  //! For float/double, see template specializations at the bottom of
+  //! mitkVectorPropertySerializer.h
   DATATYPE FromString(const std::string& s)
   {
     DATATYPE value;
@@ -127,6 +134,7 @@ public:
     return value;
   }
 
+  //! Construct a property from an XML serialization
   virtual BaseProperty::Pointer Deserialize(TiXmlElement* listElement) override
   {
     typename PropertyType::VectorType datalist;
@@ -168,12 +176,16 @@ public:
 
 };
 
+//! Specialization for double values.
+//! Let conversion be done by a function that correctly handles NaN/Inf
 template <>
 std::string VectorPropertySerializer<double>::ToString(double d)
 {
-  return DoubleToString(d);
+  return DoubleToString(d, 16);
 }
 
+//! Specialization for double values.
+//! Let conversion be done by a function that correctly handles NaN/Inf
 template <>
 double VectorPropertySerializer<double>::FromString(const std::string& s)
 {

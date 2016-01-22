@@ -66,8 +66,14 @@ public:
     data.push_back( 0 );
     data.push_back( +6172838.918273674 );
     data.push_back( sqrt(2) );
-    data.push_back( std::numeric_limits<DATATYPE>::infinity() );
-    //data.push_back( std::numeric_limits<DATATYPE>::quiet_NaN() ); // do NOT test this, cannot be == to itself
+    if (std::numeric_limits<DATATYPE>::has_infinity)
+    {
+         data.push_back( std::numeric_limits<DATATYPE>::infinity() );
+         data.push_back( -std::numeric_limits<DATATYPE>::infinity() );
+    }
+    // do NOT test NaN: cannot be == to itself, so cannot be tested like the others
+    // NaN is covered in a different test (FloatToStringTest at the time of writing this)
+    //data.push_back( std::numeric_limits<DATATYPE>::quiet_NaN() );
     vectorProperty->SetValue( data );
 
     return vectorProperty;

@@ -26,7 +26,11 @@ namespace mitk
 
 //! Converts the number to a string
 //! Will care to convert infinity to "inf" and not-a-number to "nan"
-MITKSCENESERIALIZATIONBASE_EXPORT std::string FloatToString(float f);
+//!
+//! \param f the number to convert
+//! \param precision the maximum number of meaningful digits to display in total
+//!                  counting both those before and those after the decimal point
+MITKSCENESERIALIZATIONBASE_EXPORT std::string FloatToString(float f, unsigned int precision = 16);
 
 //! Converts the string to a float number.
 //! Interpret "inf" to infinity and "nan" to not-a-number
@@ -35,7 +39,11 @@ MITKSCENESERIALIZATIONBASE_EXPORT float StringToFloat(const std::string& s);
 
 //! Converts the number to a string
 //! Will care to convert infinity to "inf" and not-a-number to "nan"
-MITKSCENESERIALIZATIONBASE_EXPORT std::string DoubleToString(double f);
+//!
+//! \param f the number to convert
+//! \param precision the maximum number of meaningful digits to display in total
+//!                  counting both those before and those after the decimal point
+MITKSCENESERIALIZATIONBASE_EXPORT std::string DoubleToString(double f, unsigned int precision = 16);
 
 //! Converts the string to a float number.
 //! Interpret "inf" to infinity and "nan" to not-a-number
