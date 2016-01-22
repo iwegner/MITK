@@ -115,7 +115,7 @@ public:
     auto property = MakeExampleProperty<DATATYPE>();
     mitk::BaseProperty::Pointer restored_property = TestSerialize(property);
 
-    mitk::VectorProperty<DATATYPE>::Pointer restored_vector_property =
+    typename mitk::VectorProperty<DATATYPE>::Pointer restored_vector_property =
         dynamic_cast<mitk::VectorProperty<DATATYPE>*>(restored_property.GetPointer());
     CPPUNIT_ASSERT(restored_vector_property.IsNotNull());
 
