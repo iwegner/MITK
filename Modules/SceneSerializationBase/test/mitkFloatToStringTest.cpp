@@ -18,10 +18,12 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkTestingMacros.h"
 
 #include "mitkFloatToString.h"
-#include "mitkEqual.h"
 
 #include <limits>
 #include <math.h>
+#include "mitkEqual.h"
+
+#include "mitkLog.h"
 
 //!
 //! Verifies functions FloatToString, DoubleToString and inverse
@@ -210,7 +212,6 @@ public:
   void TestPrecisionParameter()
   {
     CPPUNIT_ASSERT_EQUAL(std::string("5.213"), mitk::DoubleToString(5.213));
-    CPPUNIT_ASSERT_EQUAL(std::string("5.213"), mitk::DoubleToString(5.213, 0));
     CPPUNIT_ASSERT_EQUAL(std::string("5"), mitk::DoubleToString(5.213, 1));
     CPPUNIT_ASSERT_EQUAL(std::string("5.2"), mitk::DoubleToString(5.213, 2));
   }

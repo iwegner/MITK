@@ -26,6 +26,11 @@ namespace
 template <typename DATATYPE>
 std::string NumberToString(DATATYPE number, unsigned int precision)
 {
+  if (!precision)
+  {
+    MITK_WARN << "NumberToString called with precision 0. Behavior depends on platform - please give a positive precision.";
+  }
+
   if (!(number == number)) // NaN
   {
       return "nan";
