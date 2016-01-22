@@ -111,14 +111,21 @@ public:
   template <typename DATATYPE>
   void CheckRoundTrip(DATATYPE number,
                       std::function<DATATYPE(const std::string&)> from_string,
-                      std::function<std::string(DATATYPE)> to_string)
+                      std::function<std::string(DATATYPE)> to_string,
+                      DATATYPE tolerance)
   {
     std::string s = to_string(number);
     DATATYPE number2 = from_string(s);
 
     CPPUNIT_ASSERT_MESSAGE(std::string("Must not parse string ") + s + " as NaN", number2 == number2);
-
-    CPPUNIT_ASSERT(mitk::Equal(number, number2));
+    if (tolerance == 0)
+    {
+      CPPUNIT_ASSERT_EQUAL(number, number2);
+    }
+    else // mitk::Equal cannot take 0 as tolerance
+    {
+      CPPUNIT_ASSERT(mitk::Equal(number, number2, tolerance));
+    }
   }
 
   template <typename DATATYPE>
@@ -126,22 +133,25 @@ public:
                        std::function<std::string(DATATYPE)> to_string)
   {
     auto check_roundtrip = std::bind(&mitkFloatToStringTestSuite::CheckRoundTrip<DATATYPE>, this,
-                                    std::placeholders::_1, from_string, to_string);
+                                    std::placeholders::_1, from_string, to_string,
+                                    std::placeholders::_2);
 
     // we cannot test the NaN roundtrip because nan == nan will never be true
-    check_roundtrip(std::numeric_limits<DATATYPE>::infinity());
-    check_roundtrip(-std::numeric_limits<DATATYPE>::infinity());
+    check_roundtrip(std::numeric_limits<DATATYPE>::infinity(), 0.0);
+    check_roundtrip(-std::numeric_limits<DATATYPE>::infinity(), 0.0);
 
-    check_roundtrip(std::numeric_limits<DATATYPE>::denorm_min());
-    check_roundtrip(std::numeric_limits<DATATYPE>::epsilon());
-    //check_roundtrip(std::numeric_limits<DATATYPE>::lowest());
-    //check_roundtrip(std::numeric_limits<DATATYPE>::min());
-    //check_roundtrip(std::numeric_limits<DATATYPE>::max());
-    check_roundtrip(sqrt(2));
-    check_roundtrip(0.000000042);
-    check_roundtrip(422345678.2345678);
-    check_roundtrip(0.0);
-    check_roundtrip(-0.0);
+    check_roundtrip(std::numeric_limits<DATATYPE>::denorm_min(), mitk::eps);
+    check_roundtrip(std::numeric_limits<DATATYPE>::epsilon(), mitk::eps);
+    //check_roundtrip(std::numeric_limits<DATATYPE>::lowest()); parses as NaN
+    check_roundtrip(std::numeric_limits<DATATYPE>::min(), mitk::eps);
+    // max() parses as NaN. So we test a pretty big number with a _relatively_ good precision
+    check_roundtrip(std::numeric_limits<DATATYPE>::max() * 0.99,
+                    std::numeric_limits<DATATYPE>::max() * 0.0000000000001 );
+    check_roundtrip(sqrt(2), mitk::eps);
+    check_roundtrip(0.000000042, mitk::eps);
+    check_roundtrip(422345678.2345678, mitk::eps);
+    check_roundtrip(0.0, 0);
+    check_roundtrip(-0.0, 0);
   }
 
 

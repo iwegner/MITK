@@ -20,6 +20,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
 
+#include "mitkLogMacros.h"
+
 namespace
 {
 
