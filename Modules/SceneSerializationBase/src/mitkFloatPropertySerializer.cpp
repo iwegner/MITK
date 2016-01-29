@@ -20,6 +20,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkBasePropertySerializer.h"
 
 #include "mitkProperties.h"
+#include "mitkFloatToString.h"
 
 namespace mitk
 {
@@ -37,7 +38,7 @@ class FloatPropertySerializer : public BasePropertySerializer
       if (const FloatProperty* prop = dynamic_cast<const FloatProperty*>(m_Property.GetPointer()))
       {
         auto  element = new TiXmlElement("float");
-        element->SetDoubleAttribute("value", static_cast<double>(prop->GetValue()));
+        element->SetAttribute("value", FloatToString(prop->GetValue()));
         return element;
       }
       else return nullptr;
@@ -47,10 +48,10 @@ class FloatPropertySerializer : public BasePropertySerializer
     {
       if (!element) return nullptr;
 
-      float f;
-      if ( element->QueryFloatAttribute( "value", &f ) == TIXML_SUCCESS )
+      std::string f_string;
+      if ( element->QueryStringAttribute( "value", &f_string) == TIXML_SUCCESS )
       {
-        return FloatProperty::New(f).GetPointer();
+        return FloatProperty::New(StringToFloat(f_string)).GetPointer();
       }
       else
       {

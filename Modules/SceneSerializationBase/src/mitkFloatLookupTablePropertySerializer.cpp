@@ -20,6 +20,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkBasePropertySerializer.h"
 
 #include "mitkProperties.h"
+#include "mitkFloatToString.h"
 
 namespace mitk
 {
@@ -47,7 +48,7 @@ class FloatLookupTablePropertySerializer : public BasePropertySerializer
         {
           auto  tableEntry = new TiXmlElement("LUTValue");
           tableEntry->SetAttribute("id", it->first);
-          tableEntry->SetDoubleAttribute("value", static_cast<double>(it->second));
+          tableEntry->SetAttribute("value", FloatToString(it->second));
           element->LinkEndChild( tableEntry );
         }
         return element;
@@ -63,14 +64,13 @@ class FloatLookupTablePropertySerializer : public BasePropertySerializer
       {
 
         int tempID;
-        if (child->QueryIntAttribute("id", &tempID) == TIXML_WRONG_TYPE)
-          return nullptr; // TODO: can we do a better error handling?
+        if (child->QueryIntAttribute("id", &tempID) != TIXML_SUCCESS)
+          return nullptr;
         FloatLookupTable::IdentifierType id = static_cast<FloatLookupTable::IdentifierType>(tempID);
-        float tempVal = -1.0;
-        if (child->QueryFloatAttribute("value", &tempVal) == TIXML_WRONG_TYPE)
-          return nullptr; // TODO: can we do a better error handling?
-        FloatLookupTable::ValueType val = static_cast<FloatLookupTable::ValueType>(tempVal);
-        lut.SetTableValue(id, val);
+        std::string value_string;
+        if (child->QueryStringAttribute("value", &value_string) != TIXML_SUCCESS)
+          return nullptr;
+        lut.SetTableValue(id, StringToFloat(value_string));
       }
       return FloatLookupTableProperty::New(lut).GetPointer();
     }

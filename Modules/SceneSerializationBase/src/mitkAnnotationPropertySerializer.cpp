@@ -20,6 +20,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkBasePropertySerializer.h"
 
 #include "mitkAnnotationProperty.h"
+#include "mitkFloatToString.h"
 
 namespace mitk
 {
@@ -39,9 +40,9 @@ class AnnotationPropertySerializer : public BasePropertySerializer
         auto  element = new TiXmlElement("annotation");
         element->SetAttribute("label", prop->GetLabel());
         Point3D point = prop->GetPosition();
-        element->SetDoubleAttribute("x", point[0]);
-        element->SetDoubleAttribute("y", point[1]);
-        element->SetDoubleAttribute("z", point[2]);
+        element->SetAttribute("x", DoubleToString(point[0]));
+        element->SetAttribute("y", DoubleToString(point[1]));
+        element->SetAttribute("z", DoubleToString(point[2]));
         return element;
       }
       else return nullptr;
@@ -51,13 +52,15 @@ class AnnotationPropertySerializer : public BasePropertySerializer
     {
       if (!element) return nullptr;
       const char* label( element->Attribute("label") );
+      std::string p_string[3];
+      if ( element->QueryStringAttribute( "x", &p_string[0] ) != TIXML_SUCCESS )
+        return nullptr;
+      if ( element->QueryStringAttribute( "y", &p_string[1] ) != TIXML_SUCCESS )
+        return nullptr;
+      if ( element->QueryStringAttribute( "z", &p_string[2] ) != TIXML_SUCCESS )
+        return nullptr;
       Point3D p;
-      if ( element->QueryDoubleAttribute( "x", &p[0] ) != TIXML_SUCCESS )
-        return nullptr;
-      if ( element->QueryDoubleAttribute( "y", &p[1] ) != TIXML_SUCCESS )
-        return nullptr;
-      if ( element->QueryDoubleAttribute( "z", &p[2] ) != TIXML_SUCCESS )
-        return nullptr;
+      StringsToDoubles(3, p_string, p);
       return AnnotationProperty::New(label, p).GetPointer();
     }
 

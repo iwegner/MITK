@@ -20,6 +20,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkBasePropertySerializer.h"
 
 #include "mitkVectorProperty.h"
+#include "mitkFloatToString.h"
 
 namespace mitk {
 
@@ -79,6 +80,18 @@ public:
   itkFactorylessNewMacro(Self);
   itkCloneMacro(Self)
 
+  //! Default implementation, used for everything but double.
+  //! For double, see template specializations at the bottom of
+  //! mitkVectorPropertySerializer.h
+  std::string ToString(DATATYPE value)
+  {
+    std::stringstream valueS;
+    valueS.precision(16);
+    valueS << value;
+    return valueS.str();
+  }
+
+  //! Build an XML version of this property
   virtual TiXmlElement* Serialize() override
   {
     auto listElement = new TiXmlElement( "Values" );
@@ -92,12 +105,9 @@ public:
         std::stringstream indexS;
         indexS << index++;
 
-        std::stringstream valueS;
-        valueS.precision(16);
-        valueS <<  listEntry;
         auto entryElement = new TiXmlElement("Value");
         entryElement->SetAttribute("idx", indexS.str());
-        entryElement->SetAttribute("value", valueS.str());
+        entryElement->SetAttribute("value", ToString(listEntry));
         listElement->LinkEndChild( entryElement );
       }
 
@@ -109,52 +119,78 @@ public:
     }
   }
 
-
-    virtual BaseProperty::Pointer Deserialize(TiXmlElement* listElement) override
+  //! Default implementation, used for everything but float/double.
+  //! For float/double, see template specializations at the bottom of
+  //! mitkVectorPropertySerializer.h
+  DATATYPE FromString(const std::string& s)
+  {
+    DATATYPE value;
+    std::istringstream ss(s);
+    if ( !(ss >> value ) )
     {
-      typename PropertyType::VectorType datalist;
+      MITK_ERROR << "Could not make sense of '" << s << "'";
+      return -1; // NaN not possible for int, e.g.
+    }
+    return value;
+  }
 
-      if ( listElement )
+  //! Construct a property from an XML serialization
+  virtual BaseProperty::Pointer Deserialize(TiXmlElement* listElement) override
+  {
+    typename PropertyType::VectorType datalist;
+
+    if ( listElement )
+    {
+      MITK_DEBUG << "Deserializing " << *listElement;
+
+      unsigned int index(0);
+      std::string valueString;
+      DATATYPE value;
+      for ( TiXmlElement* valueElement = listElement->FirstChildElement("Value");
+            valueElement;
+            valueElement = valueElement->NextSiblingElement("Value") )
       {
-        MITK_DEBUG << "Deserializing " << *listElement;
-
-        unsigned int index(0);
-        std::string valueString;
-        DATATYPE value;
-        for ( TiXmlElement* valueElement = listElement->FirstChildElement("Value");
-              valueElement;
-              valueElement = valueElement->NextSiblingElement("Value") )
+        if ( valueElement->QueryValueAttribute("value", &valueString) != TIXML_SUCCESS )
         {
-          if ( valueElement->QueryValueAttribute("value", &valueString) != TIXML_SUCCESS )
-          {
-              MITK_ERROR << "Missing value attribute in <Values> list";
-            return nullptr;
-          }
-
-          std::istringstream ss(valueString);
-          if ( !(ss >> value ) )
-          {
-            MITK_ERROR << "Could not make sense of '" << valueString << "'";
-            return nullptr;
-          }
-
-          datalist.push_back(value);
-          ++index;
+            MITK_ERROR << "Missing value attribute in <Values> list";
+          return nullptr;
         }
 
-        typename PropertyType::Pointer property = PropertyType::New();
-        property->SetValue( datalist );
-        return property.GetPointer();
-      }
-      else
-      {
-        MITK_ERROR << "Missing <Values> tag.";
+        value = FromString(valueString);
+
+        datalist.push_back(value);
+        ++index;
       }
 
-      return nullptr;
+      typename PropertyType::Pointer property = PropertyType::New();
+      property->SetValue( datalist );
+      return property.GetPointer();
+    }
+    else
+    {
+      MITK_ERROR << "Missing <Values> tag.";
     }
 
+    return nullptr;
+  }
+
 };
+
+//! Specialization for double values.
+//! Let conversion be done by a function that correctly handles NaN/Inf
+template <>
+std::string VectorPropertySerializer<double>::ToString(double d)
+{
+  return DoubleToString(d, 16);
+}
+
+//! Specialization for double values.
+//! Let conversion be done by a function that correctly handles NaN/Inf
+template <>
+double VectorPropertySerializer<double>::FromString(const std::string& s)
+{
+  return StringToDouble(s);
+}
 
 typedef VectorPropertySerializer<double> DoubleVectorPropertySerializer;
 typedef VectorPropertySerializer<int> IntVectorPropertySerializer;
