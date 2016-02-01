@@ -101,6 +101,18 @@ if(MITK_USE_Boost)
   if(EXTERNAL_BOOST_ROOT)
     set(BOOST_ROOT ${EXTERNAL_BOOST_ROOT})
   endif()
+
+  # EXTERNAL_BOOST_ADDITIONAL_VERSIONS
+  #
+  # 2016-02-01 maleike: to be set when you want to use an external version
+  #                     of Boost that is newer than the versions known to
+  #                     the CMake version that you use (see FindBoost.cmake in
+  #                     your CMake modules)
+  set(EXTERNAL_BOOST_ADDITIONAL_VERSIONS "${Boost_ADDITIONAL_VERSIONS}" CACHE PATH "Boost versions not known to your CMake version")
+  mark_as_advanced(EXTERNAL_BOOST_ADDITIONAL_VERSIONS)
+  if(EXTERNAL_BOOST_ADDITIONAL_VERSIONS)
+    set(Boost_ADDITIONAL_VERSIONS ${EXTERNAL_BOOST_ADDITIONAL_VERSIONS})
+  endif()
 endif()
 
 # Setup file for setting custom ctest vars
@@ -395,6 +407,7 @@ ExternalProject_Add(${proj}
     -DMITK_KWSTYLE_EXECUTABLE:FILEPATH=${MITK_KWSTYLE_EXECUTABLE}
     -DDCMTK_CMAKE_DEBUG_POSTFIX:STRING=d
     -DBOOST_ROOT:PATH=${BOOST_ROOT}
+    -DBoost_ADDITIONAL_VERSIONS:PATH=${Boost_ADDITIONAL_VERSIONS}
     -DBOOST_LIBRARYDIR:PATH=${BOOST_LIBRARYDIR}
     -DMITK_USE_Boost_LIBRARIES:STRING=${MITK_USE_Boost_LIBRARIES}
   CMAKE_ARGS
