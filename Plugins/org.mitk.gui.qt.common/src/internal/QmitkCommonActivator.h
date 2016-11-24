@@ -54,6 +54,16 @@ public:
   void start(ctkPluginContext* context) override;
   void stop(ctkPluginContext* context) override;
 
+private slots:
+
+  /**
+   * Creates/starts QmitkViewCoordinator if workbench
+   * is running.
+   * If workbench is not yet running, method will
+   * re-try via QTimer until workbench is finally up.
+   */
+  void InitializeViewCoordinator();
+
 private:
 
   static QmitkCommonActivator* m_Instance;

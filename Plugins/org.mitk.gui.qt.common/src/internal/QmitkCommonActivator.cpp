@@ -19,6 +19,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <berryPlatformUI.h>
 #include <mitkLogMacros.h>
 
+#include <QTimer>
+
 QmitkCommonActivator* QmitkCommonActivator::m_Instance = nullptr;
 ctkPluginContext* QmitkCommonActivator::m_Context = nullptr;
 
@@ -43,16 +45,6 @@ QmitkCommonActivator::start(ctkPluginContext* context)
   this->m_Instance = this;
   this->m_Context = context;
   this->m_PrefServiceTracker.reset(new ctkServiceTracker<berry::IPreferencesService*>(context));
-
-  if(berry::PlatformUI::IsWorkbenchRunning())
-  {
-    m_ViewCoordinator.reset(new QmitkViewCoordinator);
-    m_ViewCoordinator->Start();
-  }
-  else
-  {
-    MITK_ERROR << "BlueBerry Workbench not running!";
-  }
 }
 
 void
@@ -60,13 +52,32 @@ QmitkCommonActivator::stop(ctkPluginContext* context)
 {
   Q_UNUSED(context)
 
-  m_ViewCoordinator->Stop();
-  m_ViewCoordinator.reset();
+  if (m_ViewCoordinator != nullptr)
+  {
+    m_ViewCoordinator->Stop();
+    m_ViewCoordinator.reset();
+  }
 
   this->m_PrefServiceTracker.reset();
 
   this->m_Context = nullptr;
   this->m_Instance = nullptr;
+}
+
+void
+QmitkCommonActivator::InitializeViewCoordinator()
+{
+  if(berry::PlatformUI::IsWorkbenchRunning())
+  {
+    m_ViewCoordinator.reset(new QmitkViewCoordinator);
+    m_ViewCoordinator->Start();
+  }
+  else
+  {
+    MITK_WARN << "Delaying start of QmitkViewCoordinator..";
+    QTimer::singleShot(100, this, SLOT(InitializeViewCoordinator()));
+  }
+
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 0, 0)
