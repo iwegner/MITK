@@ -21,6 +21,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkGeometry3D.h"
 #include "mitkRotationOperation.h"
 #include "mitkPointOperation.h"
+#include "mitkScaleOperation.h"
 #include "mitkPositionEvent.h"
 #include "mitkStateEvent.h"
 #include "mitkOperationEvent.h"
@@ -148,18 +149,21 @@ bool mitk::AffineInteractor::ExecuteAction(Action* action, mitk::StateEvent cons
     }
   case AcTRANSLATE:
     {
-      mitk::Point3D newPosition;
-      newPosition = event->GetWorldPosition();
-      newPosition -=  m_LastMousePosition.GetVectorFromOrigin();        // compute difference between actual and last mouse position
+      mitk::Point3D moveOffset;
+      moveOffset = event->GetWorldPosition();
+      moveOffset -=  m_LastMousePosition.GetVectorFromOrigin();        // compute difference between actual and last mouse position
       m_LastMousePosition = event->GetWorldPosition();               // save current mouse position as last position
 
       /* create operation with position difference */
-      mitk::PointOperation* doOp = new mitk::PointOperation(OpMOVE, newPosition, 0); // Index is not used here
+      mitk::PointOperation* doOp = new mitk::PointOperation(OpMOVE, moveOffset, 0); // Index is not used here
       if (m_UndoEnabled)  //write to UndoMechanism
       {
-        mitk::Point3D oldPosition=geometry->GetCornerPoint(0);
+        mitk::Point3D moveBackOffset(moveOffset);
+        moveBackOffset[0] *= -1.0;
+        moveBackOffset[1] *= -1.0;
+        moveBackOffset[2] *= -1.0;
 
-        PointOperation* undoOp = new mitk::PointOperation(OpMOVE, oldPosition, 0);
+        PointOperation* undoOp = new mitk::PointOperation(OpMOVE, moveBackOffset, 0);
         OperationEvent *operationEvent = new OperationEvent(geometry, doOp, undoOp);
         m_UndoController->SetOperationEvent(operationEvent);
       }
@@ -191,21 +195,21 @@ bool mitk::AffineInteractor::ExecuteAction(Action* action, mitk::StateEvent cons
       mitk::Vector3D startPosition = m_LastMousePosition.GetVectorFromOrigin() - dataPosition.GetVectorFromOrigin();  // calculate vector from center of the data object to the last mouse position
 
       /* calculate rotation axis (by calculating the cross produkt of the vectors) */
-      mitk::Vector3D rotationaxis;
-      rotationaxis[0] =  startPosition[1] * newPosition[2] - startPosition[2] * newPosition[1];
-      rotationaxis[1] =  startPosition[2] * newPosition[0] - startPosition[0] * newPosition[2];
-      rotationaxis[2] =  startPosition[0] * newPosition[1] - startPosition[1] * newPosition[0];
+      mitk::Vector3D rotationAxis;
+      rotationAxis[0] =  startPosition[1] * newPosition[2] - startPosition[2] * newPosition[1];
+      rotationAxis[1] =  startPosition[2] * newPosition[0] - startPosition[0] * newPosition[2];
+      rotationAxis[2] =  startPosition[0] * newPosition[1] - startPosition[1] * newPosition[0];
 
       /* calculate rotation angle in degrees */
-      mitk::ScalarType angle = atan2((mitk::ScalarType)rotationaxis.GetNorm(), (mitk::ScalarType) (newPosition * startPosition)) * (180/vnl_math::pi);
+      mitk::ScalarType angle = atan2((mitk::ScalarType)rotationAxis.GetNorm(), (mitk::ScalarType) (newPosition * startPosition)) * (180/vnl_math::pi);
       m_LastMousePosition = p; // save current mouse position as last mouse position
 
       /* create operation with center of rotation, angle and axis and send it to the geometry and Undo controller */
-      mitk::RotationOperation* doOp = new mitk::RotationOperation(OpROTATE, dataPosition, rotationaxis, angle);
+      mitk::RotationOperation* doOp = new mitk::RotationOperation(OpROTATE, dataPosition, rotationAxis, angle);
 
       if (m_UndoEnabled)  //write to UndoMechanism
       {
-        RotationOperation* undoOp = new mitk::RotationOperation(OpROTATE, dataPosition, rotationaxis, -angle);
+        RotationOperation* undoOp = new mitk::RotationOperation(OpROTATE, dataPosition, rotationAxis, -angle);
         OperationEvent *operationEvent = new OperationEvent(geometry, doOp, undoOp);
         m_UndoController->SetOperationEvent(operationEvent);
       }
@@ -230,10 +234,10 @@ bool mitk::AffineInteractor::ExecuteAction(Action* action, mitk::StateEvent cons
 
       mitk::Vector3D v = p - m_LastMousePosition;
       /* calculate scale changes */
-      mitk::Point3D newScale;
-      newScale[0] = (geometry->GetAxisVector(0) * v) / geometry->GetExtentInMM(0);  // Scalarprodukt of normalized Axis
-      newScale[1] = (geometry->GetAxisVector(1) * v) / geometry->GetExtentInMM(1);  // and direction vector of mouse movement
-      newScale[2] = (geometry->GetAxisVector(2) * v) / geometry->GetExtentInMM(2);  // is the length of the movement vectors
+      mitk::Point3D scaleFactor;
+      scaleFactor[0] = (geometry->GetAxisVector(0) * v) / geometry->GetExtentInMM(0);  // Scalarprodukt of normalized Axis
+      scaleFactor[1] = (geometry->GetAxisVector(1) * v) / geometry->GetExtentInMM(1);  // and direction vector of mouse movement
+      scaleFactor[2] = (geometry->GetAxisVector(2) * v) / geometry->GetExtentInMM(2);  // is the length of the movement vectors
       // projection onto the axis
       /* convert movement to local object coordinate system and mirror it to the positive quadrant */
       Vector3D start;
@@ -248,22 +252,22 @@ bool mitk::AffineInteractor::ExecuteAction(Action* action, mitk::StateEvent cons
 
       /* check if mouse movement is towards or away from the objects axes and adjust scale factors accordingly */
       Vector3D vLocal = start - end;
-      newScale[0] = (vLocal[0] > 0.0) ? -fabs(newScale[0]) : +fabs(newScale[0]);
-      newScale[1] = (vLocal[1] > 0.0) ? -fabs(newScale[1]) : +fabs(newScale[1]);
-      newScale[2] = (vLocal[2] > 0.0) ? -fabs(newScale[2]) : +fabs(newScale[2]);
+      scaleFactor[0] = (vLocal[0] > 0.0) ? -fabs(scaleFactor[0]) : +fabs(scaleFactor[0]);
+      scaleFactor[1] = (vLocal[1] > 0.0) ? -fabs(scaleFactor[1]) : +fabs(scaleFactor[1]);
+      scaleFactor[2] = (vLocal[2] > 0.0) ? -fabs(scaleFactor[2]) : +fabs(scaleFactor[2]);
 
       m_LastMousePosition = p;  // update lastPosition for next mouse move
 
       /* generate Operation and send it to the receiving geometry */
-      PointOperation* doOp = new mitk::PointOperation(OpSCALE, newScale, 0); // Index is not used here
+      ScaleOperation* doOp = new mitk::ScaleOperation(OpSCALE, scaleFactor, geometry->GetCenter()); // Index is not used here
       if (m_UndoEnabled)  //write to UndoMechanism
       {
-        mitk::Point3D oldScaleData;
-        oldScaleData[0] = -newScale[0];
-        oldScaleData[1] = -newScale[1];
-        oldScaleData[2] = -newScale[2];
+        mitk::Point3D scaleBackFactor;
+        scaleBackFactor[0] = -scaleFactor[0];
+        scaleBackFactor[1] = -scaleFactor[1];
+        scaleBackFactor[2] = -scaleFactor[2];
 
-        PointOperation* undoOp = new mitk::PointOperation(OpSCALE, oldScaleData, 0);
+        ScaleOperation* undoOp = new mitk::ScaleOperation(OpSCALE, scaleBackFactor, geometry->GetCenter());
         OperationEvent *operationEvent = new OperationEvent(geometry, doOp, undoOp);
         m_UndoController->SetOperationEvent(operationEvent);
       }
