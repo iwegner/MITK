@@ -76,7 +76,7 @@ QmitkCommonActivator::InitializeViewCoordinator()
   }
   else
   {
-    MITK_WARN << "Delaying start of QmitkViewCoordinator..";
+    //MITK_WARN << "Delaying start of QmitkViewCoordinator..";
     QTimer::singleShot(100, this, SLOT(InitializeViewCoordinator()));
   }
 
