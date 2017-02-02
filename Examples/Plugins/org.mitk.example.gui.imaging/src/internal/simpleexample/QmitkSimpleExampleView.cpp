@@ -16,32 +16,30 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "QmitkSimpleExampleView.h"
 
-#include "QmitkStepperAdapter.h"
 #include "QmitkRenderWindow.h"
+#include "QmitkStepperAdapter.h"
 
-#include "mitkMovieGenerator.h"
-#include "mitkNodePredicateProperty.h"
+#include "QmitkFFmpegWriter.h"
 #include "mitkNodePredicateNot.h"
+#include "mitkNodePredicateProperty.h"
 #include "mitkProperties.h"
 
-#include <QMessageBox>
+#include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QDir>
+#include <QMessageBox>
+#include <berryPlatform.h>
 
-
-#include <vtkRenderWindow.h>
 #include <vtkImageWriter.h>
-#include <vtkPNGWriter.h>
 #include <vtkJPEGWriter.h>
+#include <vtkPNGWriter.h>
 #include <vtkRenderLargeImage.h>
+#include <vtkRenderWindow.h>
 
 const std::string QmitkSimpleExampleView::VIEW_ID = "org.mitk.views.simpleexample";
 
 QmitkSimpleExampleView::QmitkSimpleExampleView()
-: m_Controls(NULL),
-  m_NavigatorsInitialized(false),
-  m_Parent(NULL)
+  : m_Controls(nullptr), m_NavigatorsInitialized(false), m_Parent(nullptr)
 {
 }
 
@@ -68,29 +66,33 @@ void QmitkSimpleExampleView::SetFocus()
   m_Controls->renderWindowComboBox->setFocus();
 }
 
-void QmitkSimpleExampleView::RenderWindowPartActivated(mitk::IRenderWindowPart* renderWindowPart)
+void QmitkSimpleExampleView::RenderWindowPartActivated(mitk::IRenderWindowPart *renderWindowPart)
 {
-  if (renderWindowPart == NULL)
+  if (renderWindowPart == nullptr)
   {
     m_Parent->setEnabled(false);
     return;
   }
 
-  QHashIterator<QString, QmitkRenderWindow*> renderIter(renderWindowPart->GetQmitkRenderWindows());
-  while(renderIter.hasNext())
+  QHashIterator<QString, QmitkRenderWindow *> renderIter(renderWindowPart->GetQmitkRenderWindows());
+  while (renderIter.hasNext())
   {
     renderIter.next();
     m_Controls->renderWindowComboBox->addItem(renderIter.key());
   }
 
   RenderWindowSelected(m_Controls->renderWindowComboBox->currentText());
-  m_TimeStepper.reset(new QmitkStepperAdapter(m_Controls->sliceNavigatorTime, renderWindowPart->GetTimeNavigationController()->GetTime(), "sliceNavigatorTimeFromSimpleExample"));
-  m_MovieStepper.reset(new QmitkStepperAdapter(m_Controls->movieNavigatorTime, renderWindowPart->GetTimeNavigationController()->GetTime(), "movieNavigatorTimeFromSimpleExample"));
+  m_TimeStepper.reset(new QmitkStepperAdapter(m_Controls->sliceNavigatorTime,
+                                              renderWindowPart->GetTimeNavigationController()->GetTime(),
+                                              "sliceNavigatorTimeFromSimpleExample"));
+  m_MovieStepper.reset(new QmitkStepperAdapter(m_Controls->movieNavigatorTime,
+                                               renderWindowPart->GetTimeNavigationController()->GetTime(),
+                                               "movieNavigatorTimeFromSimpleExample"));
 
   m_Parent->setEnabled(true);
 }
 
-void QmitkSimpleExampleView::RenderWindowPartDeactivated(mitk::IRenderWindowPart* /*renderWindowPart*/)
+void QmitkSimpleExampleView::RenderWindowPartDeactivated(mitk::IRenderWindowPart * /*renderWindowPart*/)
 {
   m_Parent->setEnabled(false);
 
@@ -102,86 +104,210 @@ void QmitkSimpleExampleView::RenderWindowPartDeactivated(mitk::IRenderWindowPart
 
 void QmitkSimpleExampleView::CreateConnections()
 {
-  if ( m_Controls )
+  if (m_Controls)
   {
-    connect(m_Controls->renderWindowComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(RenderWindowSelected(QString)) );
-    connect(m_Controls->stereoSelect, SIGNAL(activated(int)), this, SLOT(StereoSelectionChanged(int)) );
-    connect(m_Controls->reInitializeNavigatorsButton, SIGNAL(clicked()), this, SLOT(InitNavigators()) );
-    connect(m_Controls->genMovieButton, SIGNAL(clicked()), this, SLOT(GenerateMovie()) );
-    connect(m_Controls->m_TakeScreenshotBtn, SIGNAL(clicked()), this, SLOT(OnTakeScreenshot()) );
-    connect(m_Controls->m_TakeHighResScreenShotBtn, SIGNAL(clicked()), this, SLOT(OnTakeHighResolutionScreenshot()) );
+    connect(m_Controls->renderWindowComboBox,
+            SIGNAL(currentIndexChanged(QString)),
+            this,
+            SLOT(RenderWindowSelected(QString)));
+    connect(m_Controls->stereoSelect, SIGNAL(activated(int)), this, SLOT(StereoSelectionChanged(int)));
+    connect(m_Controls->reInitializeNavigatorsButton, SIGNAL(clicked()), this, SLOT(InitNavigators()));
+    connect(m_Controls->genMovieButton, SIGNAL(clicked()), this, SLOT(GenerateMovie()));
+    connect(m_Controls->m_TakeScreenshotBtn, SIGNAL(clicked()), this, SLOT(OnTakeScreenshot()));
+    connect(m_Controls->m_TakeHighResScreenShotBtn, SIGNAL(clicked()), this, SLOT(OnTakeHighResolutionScreenshot()));
   }
 }
 
 void QmitkSimpleExampleView::InitNavigators()
 {
   /* get all nodes that have not set "includeInBoundingBox" to false */
-  mitk::NodePredicateNot::Pointer pred = mitk::NodePredicateNot::New(mitk::NodePredicateProperty::New("includeInBoundingBox", mitk::BoolProperty::New(false)));
+  mitk::NodePredicateNot::Pointer pred = mitk::NodePredicateNot::New(
+    mitk::NodePredicateProperty::New("includeInBoundingBox", mitk::BoolProperty::New(false)));
   mitk::DataStorage::SetOfObjects::ConstPointer rs = this->GetDataStorage()->GetSubset(pred);
   /* calculate bounding geometry of these nodes */
   mitk::TimeGeometry::Pointer bounds = this->GetDataStorage()->ComputeBoundingGeometry3D(rs);
   /* initialize the views to the bounding geometry */
   m_NavigatorsInitialized = mitk::RenderingManager::GetInstance()->InitializeViews(bounds);
-  //m_NavigatorsInitialized = mitk::RenderingManager::GetInstance()->InitializeViews(GetDefaultDataStorage());
 }
 
+/**
+ * Returns path to the ffmpeg lib if configured in preferences.
+ *
+ * This implementation has been reused from MovieMaker view.
+ *
+ * @return The path to ffmpeg lib or empty string if not configured.
+ */
+QString QmitkSimpleExampleView::GetFFmpegPath() const
+{
+  berry::IPreferences::Pointer preferences =
+    berry::Platform::GetPreferencesService()->GetSystemPreferences()->Node("/org.mitk.gui.qt.ext.externalprograms");
+
+  return preferences.IsNotNull() ? preferences->Get("ffmpeg", "") : "";
+}
+
+/**
+ * Reads pixels from specified render window.
+ *
+ * This implementation has been reused from MovieMaker view.
+ *
+ * @param renderWindow
+ * @param x
+ * @param y
+ * @param width
+ * @param height
+ * @return
+ */
+static unsigned char *ReadPixels(vtkRenderWindow *renderWindow, int x, int y, int width, int height)
+{
+  if (renderWindow == nullptr)
+    return nullptr;
+
+  unsigned char *frame = new unsigned char[width * height * 3];
+
+  renderWindow->MakeCurrent();
+  glReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, frame);
+
+  return frame;
+}
+
+/**
+ * Records a movie from the selected render window with a default frame rate of 30 Hz.
+ *
+ * Parts of this implementation have been reused from MovieMaker view.
+ */
 void QmitkSimpleExampleView::GenerateMovie()
 {
-  QmitkRenderWindow* movieRenderWindow = GetSelectedRenderWindow();
-  //mitk::Stepper::Pointer stepper = multiWidget->mitkWidget1->GetSliceNavigationController()->GetSlice();
-  mitk::Stepper::Pointer stepper = movieRenderWindow->GetSliceNavigationController()->GetSlice();
-  mitk::MovieGenerator::Pointer movieGenerator = mitk::MovieGenerator::New();
-  if (movieGenerator.IsNotNull()) {
-    movieGenerator->SetStepper( stepper );
-    movieGenerator->SetRenderer( mitk::BaseRenderer::GetInstance(movieRenderWindow->GetRenderWindow()) );
+  QmitkRenderWindow *movieRenderWindow = GetSelectedRenderWindow();
 
-    QString movieFileName = QFileDialog::getSaveFileName(0, "Choose a file name", QString(), "Movie (*.avi)");
-    if (!movieFileName.isEmpty()) {
-      movieGenerator->SetFileName( movieFileName.toStdString().c_str() );
-      movieGenerator->WriteMovie();
+  mitk::Stepper::Pointer stepper = movieRenderWindow->GetSliceNavigationController()->GetSlice();
+
+  QmitkFFmpegWriter *movieWriter = new QmitkFFmpegWriter(m_Parent);
+
+  const QString ffmpegPath = GetFFmpegPath();
+
+  if (ffmpegPath.isEmpty())
+  {
+    QMessageBox::information(
+      nullptr,
+      "Movie Maker",
+      "<p>Set path to FFmpeg<sup>1</sup> or Libav<sup>2</sup> (avconv) in preferences (Window -> Preferences... "
+      "(Ctrl+P) -> External Programs) to be able to record your movies to video files.</p>"
+      "<p>If you are using Linux, chances are good that either FFmpeg or Libav is included in the official package "
+      "repositories.</p>"
+      "<p>[1] <a href=\"https://www.ffmpeg.org/download.html\">Download FFmpeg from ffmpeg.org</a><br/>"
+      "[2] <a href=\"https://libav.org/download.html\">Download Libav from libav.org</a></p>");
+    return;
+  }
+
+  movieWriter->SetFFmpegPath(GetFFmpegPath());
+
+  vtkRenderWindow *renderWindow = movieRenderWindow->GetRenderWindow();
+
+  if (renderWindow == nullptr)
+    return;
+
+  const int border = 3;
+  const int x = border;
+  const int y = border;
+  int width = renderWindow->GetSize()[0] - border * 2;
+  int height = renderWindow->GetSize()[1] - border * 2;
+
+  if (width & 1)
+    --width;
+
+  if (height & 1)
+    --height;
+
+  if (width < 16 || height < 16)
+    return;
+
+  movieWriter->SetSize(width, height);
+  movieWriter->SetFramerate(30);
+
+  QString saveFileName = QFileDialog::getSaveFileName(nullptr, "Specify a filename", "", "Movie (*.mp4)");
+
+  if (saveFileName.isEmpty())
+    return;
+
+  if (!saveFileName.endsWith(".mp4"))
+    saveFileName += ".mp4";
+
+  movieWriter->SetOutputPath(saveFileName);
+
+  const unsigned int numberOfFrames = stepper->GetSteps() - stepper->GetPos();
+
+  try
+  {
+    movieWriter->Start();
+
+    for (unsigned int currentFrame = 0; currentFrame < numberOfFrames; ++currentFrame)
+    {
+      mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+
+      renderWindow->MakeCurrent();
+      unsigned char *frame = ReadPixels(renderWindow, x, y, width, height);
+      movieWriter->WriteFrame(frame);
+      delete[] frame;
+
+      stepper->Next();
     }
+
+    movieWriter->Stop();
+
+    mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+  }
+  catch (const mitk::Exception &exception)
+  {
+    mitk::RenderingManager::GetInstance()->ForceImmediateUpdateAll();
+
+    QMessageBox::critical(nullptr, "Generate Movie", exception.GetDescription());
   }
 }
 
-void QmitkSimpleExampleView::StereoSelectionChanged( int id )
+void QmitkSimpleExampleView::StereoSelectionChanged(int id)
 {
   /* From vtkRenderWindow.h tells us about stereo rendering:
-  Set/Get what type of stereo rendering to use. CrystalEyes mode uses frame-sequential capabilities available in OpenGL to drive LCD shutter glasses and stereo projectors. RedBlue mode is a simple type of stereo for use with red-blue glasses. Anaglyph mode is a superset of RedBlue mode, but the color output channels can be configured using the AnaglyphColorMask and the color of the original image can be (somewhat maintained using AnaglyphColorSaturation; the default colors for Anaglyph mode is red-cyan. Interlaced stereo  mode produces a composite image where horizontal lines alternate between left and right views. StereoLeft and StereoRight modes choose one or the other stereo view. Dresden mode is yet another stereoscopic interleaving.
+  Set/Get what type of stereo rendering to use. CrystalEyes mode uses frame-sequential capabilities available in OpenGL
+  to drive LCD shutter glasses and stereo projectors. RedBlue mode is a simple type of stereo for use with red-blue
+  glasses. Anaglyph mode is a superset of RedBlue mode, but the color output channels can be configured using the
+  AnaglyphColorMask and the color of the original image can be (somewhat maintained using AnaglyphColorSaturation; the
+  default colors for Anaglyph mode is red-cyan. Interlaced stereo  mode produces a composite image where horizontal
+  lines alternate between left and right views. StereoLeft and StereoRight modes choose one or the other stereo view.
+  Dresden mode is yet another stereoscopic interleaving.
   */
 
-  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
-  vtkRenderWindow * vtkrenderwindow = this->GetSelectedRenderWindow()->GetVtkRenderWindow();
+  mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart();
+  vtkRenderWindow *vtkrenderwindow = renderWindowPart->GetQmitkRenderWindow("3d")->GetVtkRenderWindow();
 
   // note: foreground vtkRenderers (at least the department logo renderer) produce errors in stereoscopic visualization.
   // Therefore, we disable the logo visualization during stereo rendering.
-  switch(id)
+  switch (id)
   {
-  case 0:
-    vtkrenderwindow->StereoRenderOff();
-    break;
-  case 1:
-    vtkrenderwindow->SetStereoTypeToRedBlue();
-    vtkrenderwindow->StereoRenderOn();
-    renderWindowPart->EnableDecorations(false, QStringList(mitk::IRenderWindowPart::DECORATION_LOGO));
-    break;
-  case 2:
-    vtkrenderwindow->SetStereoTypeToDresden();
-    vtkrenderwindow->StereoRenderOn();
-    renderWindowPart->EnableDecorations(false, QStringList(mitk::IRenderWindowPart::DECORATION_LOGO));
-    break;
+    case 0:
+      vtkrenderwindow->StereoRenderOff();
+      break;
+    case 1:
+      vtkrenderwindow->SetStereoTypeToRedBlue();
+      vtkrenderwindow->StereoRenderOn();
+      renderWindowPart->EnableDecorations(false, QStringList(mitk::IRenderWindowPart::DECORATION_LOGO));
+      break;
+    case 2:
+      vtkrenderwindow->SetStereoTypeToDresden();
+      vtkrenderwindow->StereoRenderOn();
+      renderWindowPart->EnableDecorations(false, QStringList(mitk::IRenderWindowPart::DECORATION_LOGO));
+      break;
   }
-
 
   mitk::BaseRenderer::GetInstance(vtkrenderwindow)->SetMapperID(mitk::BaseRenderer::Standard3D);
   renderWindowPart->RequestUpdate();
 }
 
-QmitkRenderWindow* QmitkSimpleExampleView::GetSelectedRenderWindow() const
+QmitkRenderWindow *QmitkSimpleExampleView::GetSelectedRenderWindow() const
 {
   QString id = m_Controls->renderWindowComboBox->currentText();
   if (id.isEmpty())
   {
-    return NULL;
+    return nullptr;
   }
   else
   {
@@ -191,56 +317,76 @@ QmitkRenderWindow* QmitkSimpleExampleView::GetSelectedRenderWindow() const
 
 void QmitkSimpleExampleView::OnTakeHighResolutionScreenshot()
 {
-  QString fileName = QFileDialog::getSaveFileName(NULL, "Save screenshot to...", QDir::currentPath(), "JPEG file (*.jpg);;PNG file (*.png)");
+  QString filter;
+  QString fileName = QFileDialog::getSaveFileName(
+    nullptr, "Save screenshot to...", QDir::currentPath(), m_PNGExtension + ";;" + m_JPGExtension, &filter);
 
-  vtkRenderer* renderer = this->GetSelectedRenderWindow()->GetRenderer()->GetVtkRenderer();
-  if (renderer == NULL)
+  vtkRenderer *renderer = this->GetSelectedRenderWindow()->GetRenderer()->GetVtkRenderer();
+  if (renderer == nullptr)
     return;
-  this->TakeScreenshot(renderer, 4, fileName);
+  this->TakeScreenshot(renderer, 4, fileName, filter);
 }
 
 void QmitkSimpleExampleView::OnTakeScreenshot()
 {
-  QString fileName = QFileDialog::getSaveFileName(NULL, "Save screenshot to...", QDir::currentPath(), "JPEG file (*.jpg);;PNG file (*.png)");
+  QString filter;
+  QString fileName = QFileDialog::getSaveFileName(
+    nullptr, "Save screenshot to...", QDir::currentPath(), m_PNGExtension + ";;" + m_JPGExtension, &filter);
 
-  QmitkRenderWindow* renWin = this->GetSelectedRenderWindow();
-  if (renWin == NULL)
+  QmitkRenderWindow *renWin = this->GetSelectedRenderWindow();
+  if (renWin == nullptr)
     return;
 
-  vtkRenderer* renderer = renWin->GetRenderer()->GetVtkRenderer();
-  if (renderer == NULL)
+  vtkRenderer *renderer = renWin->GetRenderer()->GetVtkRenderer();
+  if (renderer == nullptr)
     return;
-  this->TakeScreenshot(renderer, 1, fileName);
+  this->TakeScreenshot(renderer, 1, fileName, filter);
 }
 
-
-void QmitkSimpleExampleView::TakeScreenshot(vtkRenderer* renderer, unsigned int magnificationFactor, QString fileName)
+void QmitkSimpleExampleView::TakeScreenshot(vtkRenderer *renderer,
+                                            unsigned int magnificationFactor,
+                                            QString fileName,
+                                            QString filter)
 {
-  if ((renderer == NULL) ||(magnificationFactor < 1) || fileName.isEmpty())
+  if ((renderer == nullptr) || (magnificationFactor < 1) || fileName.isEmpty())
     return;
 
-  bool doubleBuffering( renderer->GetRenderWindow()->GetDoubleBuffer() );
+  bool doubleBuffering(renderer->GetRenderWindow()->GetDoubleBuffer());
   renderer->GetRenderWindow()->DoubleBufferOff();
 
-  vtkImageWriter* fileWriter;
+  vtkImageWriter *fileWriter = nullptr;
 
   QFileInfo fi(fileName);
-  QString suffix = fi.suffix();
-  if (suffix.compare("png", Qt::CaseInsensitive) == 0)
+  QString suffix = fi.suffix().toLower();
+
+  if (suffix.isEmpty() || (suffix != "png" && suffix != "jpg" && suffix != "jpeg"))
   {
-    fileWriter = vtkPNGWriter::New();
+    if (filter == m_PNGExtension)
+    {
+      suffix = "png";
+    }
+    else if (filter == m_JPGExtension)
+    {
+      suffix = "jpg";
+    }
+    fileName += "." + suffix;
   }
-  else  // default is jpeg
+
+  if (suffix.compare("jpg", Qt::CaseInsensitive) == 0 || suffix.compare("jpeg", Qt::CaseInsensitive) == 0)
   {
-    vtkJPEGWriter* w = vtkJPEGWriter::New();
+    vtkJPEGWriter *w = vtkJPEGWriter::New();
     w->SetQuality(100);
     w->ProgressiveOff();
     fileWriter = w;
   }
-  vtkRenderLargeImage* magnifier = vtkRenderLargeImage::New();
+  else // default is png
+  {
+    fileWriter = vtkPNGWriter::New();
+  }
+
+  vtkRenderLargeImage *magnifier = vtkRenderLargeImage::New();
   magnifier->SetInput(renderer);
   magnifier->SetMagnification(magnificationFactor);
-  //magnifier->Update();
   fileWriter->SetInputConnection(magnifier->GetOutputPort());
   fileWriter->SetFileName(fileName.toLatin1());
 
@@ -251,7 +397,7 @@ void QmitkSimpleExampleView::TakeScreenshot(vtkRenderer* renderer, unsigned int 
   renderer->GetBackground(oldBackground);
   double white[] = {1.0, 1.0, 1.0};
   renderer->SetBackground(white);
-  mitk::IRenderWindowPart* renderWindowPart = this->GetRenderWindowPart();
+  mitk::IRenderWindowPart *renderWindowPart = this->GetRenderWindowPart();
   renderWindowPart->EnableDecorations(false);
 
   fileWriter->Write();
@@ -268,8 +414,9 @@ void QmitkSimpleExampleView::RenderWindowSelected(const QString &id)
 {
   if (!id.isEmpty())
   {
-    m_SliceStepper.reset(new QmitkStepperAdapter(m_Controls->sliceNavigator,
-                                                 this->GetRenderWindowPart()->GetQmitkRenderWindow(id)->GetSliceNavigationController()->GetSlice(),
-                                                 "sliceNavigatorFromSimpleExample"));
+    m_SliceStepper.reset(new QmitkStepperAdapter(
+      m_Controls->sliceNavigator,
+      this->GetRenderWindowPart()->GetQmitkRenderWindow(id)->GetSliceNavigationController()->GetSlice(),
+      "sliceNavigatorFromSimpleExample"));
   }
 }

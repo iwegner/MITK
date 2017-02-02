@@ -2,13 +2,17 @@ file(GLOB_RECURSE H_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURREN
 
 set(CPP_FILES
   mitkDICOMFileReader.cpp
+  mitkDICOMTagScanner.cpp
   mitkDICOMGDCMTagScanner.cpp
+  mitkDICOMDCMTKTagScanner.cpp
   mitkDICOMImageBlockDescriptor.cpp
   mitkDICOMITKSeriesGDCMReader.cpp
   mitkDICOMDatasetSorter.cpp
   mitkDICOMTagBasedSorter.cpp
   mitkDICOMGDCMImageFrameInfo.cpp
   mitkDICOMImageFrameInfo.cpp
+  mitkDICOMGenericImageFrameInfo.cpp
+  mitkDICOMDatasetAccessingImageFrameInfo.cpp
   mitkDICOMSortCriterion.cpp
   mitkDICOMSortByTag.cpp
   mitkITKDICOMSeriesReaderHelper.cpp
@@ -19,10 +23,16 @@ set(CPP_FILES
   mitkClassicDICOMSeriesReader.cpp
   mitkThreeDnTDICOMSeriesReader.cpp
   mitkDICOMTag.cpp
+  mitkDICOMTagsOfInterestHelper.cpp
   mitkDICOMTagCache.cpp
+  mitkDICOMGDCMTagCache.cpp
+  mitkDICOMGenericTagCache.cpp
   mitkDICOMEnums.cpp
   mitkDICOMReaderConfigurator.cpp
   mitkDICOMFileReaderSelector.cpp
+  mitkIDICOMTagsOfInterest.cpp
+  mitkDICOMTagPath.cpp
+  mitkDICOMProperty.cpp
 )
 
 set(RESOURCE_FILES
@@ -34,4 +44,6 @@ set(RESOURCE_FILES
   configurations/3D/slicelocation.xml
 
   configurations/3DnT/classicreader.xml
+  configurations/3DnT/imageposition_byacquisition.xml
+  configurations/3DnT/imageposition_bytriggertime.xml
 )

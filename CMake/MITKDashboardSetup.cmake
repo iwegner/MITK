@@ -9,7 +9,11 @@ set(MY_OPERATING_SYSTEM )
 
 if(UNIX)
   # Download a utility script
-  set(url "http://mitk.org/git/?p=MITK.git;a=blob_plain;f=CMake/mitkDetectOS.sh;hb=${hb}")
+  if(IS_PHABRICATOR_URL)
+    set(url "https://phabricator.mitk.org/source/mitk/browse/${GIT_BRANCH}/CMake/mitkDetectOS.sh?view=raw")
+  else()
+    set(url "https://raw.githubusercontent.com/MITK/MITK/master/CMake/mitkDetectOS.sh")
+  endif()
   set(dest "${CTEST_SCRIPT_DIRECTORY}/mitkDetectOS.sh")
   downloadFile("${url}" "${dest}")
   execute_process(COMMAND sh "${dest}"
@@ -27,13 +31,13 @@ endif()
 
 site_name(CTEST_SITE)
 
-if(NOT DEFINED MITK_USE_QT)
-  set(MITK_USE_QT 1)
+if(NOT DEFINED MITK_USE_Qt5)
+  set(MITK_USE_Qt5 1)
 endif()
 
-if(MITK_USE_QT)
+if(MITK_USE_Qt5)
   if(NOT QT_QMAKE_EXECUTABLE)
-    find_program(QT_QMAKE_EXECUTABLE NAMES qmake qmake-qt4
+    find_program(QT_QMAKE_EXECUTABLE NAMES qmake qmake-qt5
                  HINTS ${QT_BINARY_DIR})
   endif()
 
@@ -51,7 +55,7 @@ endif()
 # Project specific properties
 #
 if(NOT CTEST_BUILD_NAME)
-  if(MITK_USE_QT)
+  if(MITK_USE_Qt5)
      set(CTEST_BUILD_NAME "${MY_OPERATING_SYSTEM} ${MY_COMPILER} Qt${MY_QT_VERSION} ${CTEST_BUILD_CONFIGURATION}")
   else()
     set(CTEST_BUILD_NAME "${MY_OPERATING_SYSTEM} ${MY_COMPILER} ${CTEST_BUILD_CONFIGURATION}")
@@ -83,7 +87,7 @@ set(ENV{PATH} "${CTEST_PATH}")
 
 # If the dashscript doesn't define a GIT_REPOSITORY variable, let's define it here.
 if(NOT DEFINED GIT_REPOSITORY OR GIT_REPOSITORY STREQUAL "")
-  set(GIT_REPOSITORY "http://git.mitk.org/MITK.git")
+  set(GIT_REPOSITORY "https://phabricator.mitk.org/source/mitk.git")
 endif()
 
 #
@@ -125,7 +129,7 @@ MITK_VTK_DEBUG_LEAKS:BOOL=${MITK_VTK_DEBUG_LEAKS}
 ${ADDITIONAL_CMAKECACHE_OPTION}
 ")
 
-if(MITK_USE_QT)
+if(MITK_USE_Qt5)
   set(INITIAL_CMAKECACHE_OPTIONS "${INITIAL_CMAKECACHE_OPTIONS}
 QT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}")
 endif()
@@ -145,7 +149,11 @@ endif()
 #
 # Download and include dashboard driver script
 #
-set(url "http://mitk.org/git/?p=MITK.git;a=blob_plain;f=CMake/MITKDashboardDriverScript.cmake;hb=${hb}")
+if(IS_PHABRICATOR_URL)
+  set(url "https://phabricator.mitk.org/source/mitk/browse/${GIT_BRANCH}/CMake/MITKDashboardDriverScript.cmake?view=raw")
+else()
+  set(url "https://raw.githubusercontent.com/MITK/MITK/master/CMake/MITKDashboardDriverScript.cmake")
+endif()
 set(dest ${CTEST_SCRIPT_DIRECTORY}/${CTEST_SCRIPT_NAME}.driver)
 downloadFile("${url}" "${dest}")
 include(${dest})

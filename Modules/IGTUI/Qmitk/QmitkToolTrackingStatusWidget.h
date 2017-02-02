@@ -24,9 +24,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkNavigationToolStorage.h>
 #include <QVector>
 #include <QLabel>
-
-
-
+#include <usModuleContext.h>
 
 /*!
 \brief QmitkToolTrackingStatusWidget
@@ -38,7 +36,6 @@ class MITKIGTUI_EXPORT QmitkToolTrackingStatusWidget : public QWidget
 {
   Q_OBJECT // this is needed for all Qt objects that should have a MOC object (everything that derives from QObject)
 public:
-
 
   typedef std::vector< mitk::NavigationData::Pointer > NavigationDataPointerArray;
 
@@ -52,7 +49,6 @@ public:
   \brief default constructor
   */
   QmitkToolTrackingStatusWidget( QWidget* parent );
-
 
   /*!
   \brief default destructor
@@ -107,12 +103,12 @@ public:
   void PreShowTools(mitk::NavigationToolStorage::Pointer toolStorage);
 
 
+  void OnServiceEvent(const us::ServiceEvent event);
 
 protected:
   void CreateConnections();
   void CreateQtPartControl( QWidget *parent );
   Ui::QmitkToolTrackingStatusWidgetControls* m_Controls;  ///< gui widgets
-
 
 private:
 
@@ -122,6 +118,7 @@ private:
   QVector< QLabel* >* m_StatusLabels;
 
   std::vector<mitk::NavigationData::Pointer>*  m_NavigationDatas;
+  bool m_NavDatasNewFlag;
 
   bool m_ShowPositions;
 
@@ -131,12 +128,14 @@ private:
 
   QmitkToolTrackingStatusWidget::Style m_Style;
 
+  mitk::NavigationToolStorage::Pointer m_previewToolStorage; ///>Tool Storage which is used for preview when tracking is not active...
+
   void RemoveGuiLabels();
 
   /** @brief Adds an empty label which tells the user that currently no tool is availiable. */
   void AddEmptyLabel();
 
+  us::ModuleContext* m_Context;
 
 };
 #endif // _QmitkToolTrackingStatusWidget_H_INCLUDED
-

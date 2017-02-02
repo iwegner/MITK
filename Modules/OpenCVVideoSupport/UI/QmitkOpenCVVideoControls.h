@@ -46,7 +46,7 @@ public:
   /// Construct the widget with the given render window and the given preset values
   ///
   QmitkOpenCVVideoControls(QmitkVideoBackground* _VideoBackground, QmitkRenderWindow* _RenderWindow
-    , QWidget * parent = 0, Qt::WindowFlags f = 0);
+    , QWidget* parent = 0, Qt::WindowFlags f = 0);
 
   ///
   /// call reset if video playback is enabled here
@@ -92,12 +92,15 @@ protected slots:
   void on_RepeatVideoButton_clicked( bool checked=false );
   void on_PlayButton_clicked(bool checked=false);
   void on_StopButton_clicked(bool checked=false);
+  void Play();
   void Stop();
   void Reset();
   void SwitchPlayButton(bool paused);
   void QObjectDestroyed( QObject * obj = 0 );
 
   void NewFrameAvailable(mitk::VideoSource* videoSource);
+  void EndOfVideoSourceReached(mitk::VideoSource* videoSource);
+
 protected:
   QmitkVideoBackground* m_VideoBackground;
   QmitkRenderWindow* m_RenderWindow;

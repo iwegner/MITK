@@ -15,21 +15,25 @@
  ===================================================================*/
 
 #include "mitkEventStateMachine.h"
-#include "mitkStateMachineContainer.h"
+#include "mitkApplicationCursor.h"
 #include "mitkInteractionEvent.h"
 #include "mitkStateMachineAction.h"
 #include "mitkStateMachineCondition.h"
-#include "mitkStateMachineTransition.h"
+#include "mitkStateMachineContainer.h"
 #include "mitkStateMachineState.h"
+#include "mitkStateMachineTransition.h"
 #include "mitkUndoController.h"
-#include "mitkApplicationCursor.h"
 
-mitk::EventStateMachine::EventStateMachine() :
-  m_IsActive(true), m_UndoController(NULL), m_StateMachineContainer(NULL),  m_CurrentState(NULL), m_MouseCursorSet(false)
+mitk::EventStateMachine::EventStateMachine()
+  : m_IsActive(true),
+    m_UndoController(NULL),
+    m_StateMachineContainer(NULL),
+    m_CurrentState(NULL),
+    m_MouseCursorSet(false)
 {
   if (!m_UndoController)
   {
-    m_UndoController = new UndoController(UndoController::VERBOSE_LIMITEDLINEARUNDO);//switch to LLU or add LLU
+    m_UndoController = new UndoController(UndoController::VERBOSE_LIMITEDLINEARUNDO); // switch to LLU or add LLU
 
     /**
     * here the Undo mechanism is enabled / disabled for all interactors.
@@ -38,7 +42,7 @@ mitk::EventStateMachine::EventStateMachine() :
   }
 }
 
-bool mitk::EventStateMachine::LoadStateMachine(const std::string& filename, const us::Module* module)
+bool mitk::EventStateMachine::LoadStateMachine(const std::string &filename, const us::Module *module)
 {
   if (m_StateMachineContainer != NULL)
   {
@@ -50,23 +54,22 @@ bool mitk::EventStateMachine::LoadStateMachine(const std::string& filename, cons
   {
     m_CurrentState = m_StateMachineContainer->GetStartState();
 
-    for(ConditionDelegatesMapType::iterator i = m_ConditionDelegatesMap.begin();
-        i != m_ConditionDelegatesMap.end(); ++i)
+    for (ConditionDelegatesMapType::iterator i = m_ConditionDelegatesMap.begin(); i != m_ConditionDelegatesMap.end();
+         ++i)
     {
       delete i->second;
     }
     m_ConditionDelegatesMap.clear();
 
-
     // clear actions map ,and connect all actions as declared in sub-class
-    for(std::map<std::string, TActionFunctor*>::iterator i = m_ActionFunctionsMap.begin();
-        i != m_ActionFunctionsMap.end(); ++i)
+    for (std::map<std::string, TActionFunctor *>::iterator i = m_ActionFunctionsMap.begin();
+         i != m_ActionFunctionsMap.end();
+         ++i)
     {
       delete i->second;
     }
     m_ActionFunctionsMap.clear();
-    for(ActionDelegatesMapType::iterator i = m_ActionDelegatesMap.begin();
-        i != m_ActionDelegatesMap.end(); ++i)
+    for (ActionDelegatesMapType::iterator i = m_ActionDelegatesMap.begin(); i != m_ActionDelegatesMap.end(); ++i)
     {
       delete i->second;
     }
@@ -77,7 +80,7 @@ bool mitk::EventStateMachine::LoadStateMachine(const std::string& filename, cons
   }
   else
   {
-    MITK_WARN<< "Unable to load StateMachine from file: " << filename;
+    MITK_WARN << "Unable to load StateMachine from file: " << filename;
     return false;
   }
 }
@@ -90,11 +93,11 @@ mitk::EventStateMachine::~EventStateMachine()
   }
 }
 
-void mitk::EventStateMachine::AddActionFunction(const std::string& action, mitk::TActionFunctor* functor)
+void mitk::EventStateMachine::AddActionFunction(const std::string &action, mitk::TActionFunctor *functor)
 {
   if (!functor)
     return;
-// make sure double calls for same action won't cause memory leaks
+  // make sure double calls for same action won't cause memory leaks
   delete m_ActionFunctionsMap[action];
   ActionDelegatesMapType::iterator i = m_ActionDelegatesMap.find(action);
   if (i != m_ActionDelegatesMap.end())
@@ -105,9 +108,9 @@ void mitk::EventStateMachine::AddActionFunction(const std::string& action, mitk:
   m_ActionFunctionsMap[action] = functor;
 }
 
-void mitk::EventStateMachine::AddActionFunction(const std::string& action, const ActionFunctionDelegate& delegate)
+void mitk::EventStateMachine::AddActionFunction(const std::string &action, const ActionFunctionDelegate &delegate)
 {
-  std::map<std::string, TActionFunctor*>::iterator i = m_ActionFunctionsMap.find(action);
+  std::map<std::string, TActionFunctor *>::iterator i = m_ActionFunctionsMap.find(action);
   if (i != m_ActionFunctionsMap.end())
   {
     delete i->second;
@@ -118,13 +121,13 @@ void mitk::EventStateMachine::AddActionFunction(const std::string& action, const
   m_ActionDelegatesMap[action] = delegate.Clone();
 }
 
-
-void mitk::EventStateMachine::AddConditionFunction(const std::string& condition, const ConditionFunctionDelegate& delegate)
+void mitk::EventStateMachine::AddConditionFunction(const std::string &condition,
+                                                   const ConditionFunctionDelegate &delegate)
 {
   m_ConditionDelegatesMap[condition] = delegate.Clone();
 }
 
-bool mitk::EventStateMachine::HandleEvent(InteractionEvent* event, DataNode* dataNode)
+bool mitk::EventStateMachine::HandleEvent(InteractionEvent *event, DataNode *dataNode)
 {
   if (!m_IsActive)
     return false;
@@ -135,28 +138,28 @@ bool mitk::EventStateMachine::HandleEvent(InteractionEvent* event, DataNode* dat
   }
 
   // Get the transition that can be executed
-  mitk::StateMachineTransition::Pointer transition = GetExecutableTransition( event );
+  mitk::StateMachineTransition::Pointer transition = GetExecutableTransition(event);
 
   // check if the current state holds a transition that works with the given event.
-  if ( transition.IsNotNull() )
+  if (transition.IsNotNull())
   {
     // all conditions are fulfilled so we can continue with the actions
     m_CurrentState = transition->GetNextState();
 
     // iterate over all actions in this transition and execute them
-    ActionVectorType actions = transition->GetActions();
-    for (ActionVectorType::iterator it = actions.begin(); it != actions.end(); ++it)
+    const ActionVectorType actions = transition->GetActions();
+    for (ActionVectorType::const_iterator it = actions.cbegin(); it != actions.cend(); ++it)
     {
       try
       {
         ExecuteAction(*it, event);
       }
-      catch( const std::exception& e )
+      catch (const std::exception &e)
       {
         MITK_ERROR << "Unhandled excaption caught in ExecuteAction(): " << e.what();
         return false;
       }
-      catch( ... )
+      catch (...)
       {
         MITK_ERROR << "Unhandled excaption caught in ExecuteAction()";
         return false;
@@ -170,14 +173,15 @@ bool mitk::EventStateMachine::HandleEvent(InteractionEvent* event, DataNode* dat
 
 void mitk::EventStateMachine::ConnectActionsAndFunctions()
 {
-  MITK_WARN<< "ConnectActionsAndFunctions in DataInteractor not implemented.\n DataInteractor will not be able to process any events.";
+  MITK_WARN << "ConnectActionsAndFunctions in DataInteractor not implemented.\n DataInteractor will not be able to "
+               "process any events.";
 }
 
-bool mitk::EventStateMachine::CheckCondition( const StateMachineCondition& condition, const InteractionEvent* event)
+bool mitk::EventStateMachine::CheckCondition(const StateMachineCondition &condition, const InteractionEvent *event)
 {
   bool retVal = false;
-  ConditionDelegatesMapType::iterator delegateIter = m_ConditionDelegatesMap.find(condition.GetConditionName());
-  if (delegateIter != m_ConditionDelegatesMap.end())
+  ConditionDelegatesMapType::const_iterator delegateIter = m_ConditionDelegatesMap.find(condition.GetConditionName());
+  if (delegateIter != m_ConditionDelegatesMap.cend())
   {
     retVal = delegateIter->second->Execute(event);
   }
@@ -189,26 +193,25 @@ bool mitk::EventStateMachine::CheckCondition( const StateMachineCondition& condi
   return retVal;
 }
 
-void mitk::EventStateMachine::ExecuteAction(StateMachineAction* action, InteractionEvent* event)
+void mitk::EventStateMachine::ExecuteAction(StateMachineAction *action, InteractionEvent *event)
 {
-
   if (action == NULL)
   {
     return;
   }
 
-
   // Maps Action-Name to Functor and executes the Functor.
-  ActionDelegatesMapType::iterator delegateIter = m_ActionDelegatesMap.find(action->GetActionName());
-  if (delegateIter != m_ActionDelegatesMap.end())
+  ActionDelegatesMapType::const_iterator delegateIter = m_ActionDelegatesMap.find(action->GetActionName());
+  if (delegateIter != m_ActionDelegatesMap.cend())
   {
     delegateIter->second->Execute(action, event);
   }
   else
   {
     // try the legacy system
-    std::map<std::string, TActionFunctor*>::iterator functionIter = m_ActionFunctionsMap.find(action->GetActionName());
-    if (functionIter != m_ActionFunctionsMap.end())
+    std::map<std::string, TActionFunctor *>::const_iterator functionIter =
+      m_ActionFunctionsMap.find(action->GetActionName());
+    if (functionIter != m_ActionFunctionsMap.cend())
     {
       functionIter->second->DoAction(action, event);
     }
@@ -216,72 +219,71 @@ void mitk::EventStateMachine::ExecuteAction(StateMachineAction* action, Interact
     {
       MITK_WARN << "No implementation of action '" << action->GetActionName() << "' has been found.";
     }
-
   }
 }
 
-mitk::StateMachineState* mitk::EventStateMachine::GetCurrentState() const
+mitk::StateMachineState *mitk::EventStateMachine::GetCurrentState() const
 {
   return m_CurrentState.GetPointer();
 }
 
-bool mitk::EventStateMachine::FilterEvents(InteractionEvent* interactionEvent, DataNode* dataNode)
+bool mitk::EventStateMachine::FilterEvents(InteractionEvent *interactionEvent, DataNode *dataNode)
 {
   if (dataNode == NULL)
   {
-    MITK_WARN<< "EventStateMachine: Empty DataNode received along with this Event " << interactionEvent;
+    MITK_WARN << "EventStateMachine: Empty DataNode received along with this Event " << interactionEvent;
     return false;
   }
   bool visible = false;
-  if (dataNode->GetPropertyList()->GetBoolProperty("visible", visible) == false)
-  { //property doesn't exist
+  if (dataNode->GetBoolProperty("visible", visible, interactionEvent->GetSender()) == false)
+  { // property doesn't exist
     return false;
   }
   return visible;
 }
 
-mitk::StateMachineTransition* mitk::EventStateMachine::GetExecutableTransition( mitk::InteractionEvent* event )
+mitk::StateMachineTransition *mitk::EventStateMachine::GetExecutableTransition(mitk::InteractionEvent *event)
 {
   // Map that will contain all conditions that are possibly used by the
   // transitions
   std::map<std::string, bool> conditionsMap;
 
   // Get a list of all transitions that match the given event
-  mitk::StateMachineState::TransitionVector transitionList =
-    m_CurrentState->GetTransitionList( event->GetNameOfClass(), MapToEventVariant(event) );
+  const mitk::StateMachineState::TransitionVector transitionList =
+    m_CurrentState->GetTransitionList(event->GetNameOfClass(), MapToEventVariant(event));
 
   // if there are not transitions, we can return NULL here.
-  if ( transitionList.empty() )
+  if (transitionList.empty())
   {
     return NULL;
   }
 
-  StateMachineState::TransitionVector::iterator transitionIter;
-  ConditionVectorType::iterator conditionIter;
-  for( transitionIter=transitionList.begin(); transitionIter!=transitionList.end(); ++transitionIter )
+  StateMachineState::TransitionVector::const_iterator transitionIter;
+  ConditionVectorType::const_iterator conditionIter;
+  for (transitionIter = transitionList.cbegin(); transitionIter != transitionList.cend(); ++transitionIter)
   {
     bool allConditionsFulfilled(true);
 
     // Get all conditions for the current transition
-    ConditionVectorType conditions = (*transitionIter)->GetConditions();
-    for (conditionIter = conditions.begin(); conditionIter != conditions.end(); ++conditionIter)
+    const ConditionVectorType conditions = (*transitionIter)->GetConditions();
+    for (conditionIter = conditions.cbegin(); conditionIter != conditions.cend(); ++conditionIter)
     {
       bool currentConditionFulfilled(false);
 
       // sequentially check all conditions that we have evaluated above
-      std::string conditionName = (*conditionIter).GetConditionName();
+      const std::string conditionName = (*conditionIter).GetConditionName();
 
       // Check if the condition has already been evaluated
-      if ( conditionsMap.find(conditionName) == conditionsMap.end() )
+      if (conditionsMap.find(conditionName) == conditionsMap.cend())
       {
         // if the condition has not been evaluated yet, do it now and store
         // the result in the map
         try
         {
-          currentConditionFulfilled = CheckCondition( (*conditionIter), event );
-          conditionsMap.insert( std::pair<std::string, bool>(conditionName, currentConditionFulfilled) );
+          currentConditionFulfilled = CheckCondition((*conditionIter), event);
+          conditionsMap.insert(std::pair<std::string, bool>(conditionName, currentConditionFulfilled));
         }
-        catch (const std::exception& e)
+        catch (const std::exception &e)
         {
           MITK_ERROR << "Unhandled excaption caught in CheckCondition(): " << e.what();
           currentConditionFulfilled = false;
@@ -302,16 +304,15 @@ mitk::StateMachineTransition* mitk::EventStateMachine::GetExecutableTransition( 
 
       // set 'allConditionsFulfilled' under consideration of a possible
       // inversion of the condition
-      if ( currentConditionFulfilled == (*conditionIter).IsInverted() )
+      if (currentConditionFulfilled == (*conditionIter).IsInverted())
       {
         allConditionsFulfilled = false;
         break;
       }
-
     }
 
     // If all conditions are fulfilled, we execute this transition
-    if ( allConditionsFulfilled )
+    if (allConditionsFulfilled)
     {
       return (*transitionIter);
     }
@@ -321,29 +322,26 @@ mitk::StateMachineTransition* mitk::EventStateMachine::GetExecutableTransition( 
   return NULL;
 }
 
-
 void mitk::EventStateMachine::ResetToStartState()
 {
   m_CurrentState = m_StateMachineContainer->GetStartState();
 }
 
-
 void mitk::EventStateMachine::SetMouseCursor(const char *xpm[], int hotspotX, int hotspotY)
 {
   // Remove previously set mouse cursor
-  if ( m_MouseCursorSet )
+  if (m_MouseCursorSet)
   {
     ApplicationCursor::GetInstance()->PopCursor();
   }
 
-  ApplicationCursor::GetInstance()->PushCursor( xpm, hotspotX, hotspotY );
+  ApplicationCursor::GetInstance()->PushCursor(xpm, hotspotX, hotspotY);
   m_MouseCursorSet = true;
 }
 
-
 void mitk::EventStateMachine::ResetMouseCursor()
 {
-  if ( m_MouseCursorSet )
+  if (m_MouseCursorSet)
   {
     ApplicationCursor::GetInstance()->PopCursor();
     m_MouseCursorSet = false;

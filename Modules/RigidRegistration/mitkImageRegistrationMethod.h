@@ -17,14 +17,14 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef MITKIMAGEREGISTRATIONMETHOD_H
 #define MITKIMAGEREGISTRATIONMETHOD_H
 
-#include "itkImageRegistrationMethod.h"
 #include "MitkRigidRegistrationExports.h"
+#include "itkImageRegistrationMethod.h"
 #include "itkSingleValuedNonLinearOptimizer.h"
 
-#include "mitkImageToImageFilter.h"
-#include "mitkImageAccessByItk.h"
-#include "mitkRigidRegistrationObserver.h"
 #include "mitkCommon.h"
+#include "mitkImageAccessByItk.h"
+#include "mitkImageToImageFilter.h"
+#include "mitkRigidRegistrationObserver.h"
 
 #include "itkImageMaskSpatialObject.h"
 #include "mitkRigidRegistrationPreset.h"
@@ -40,18 +40,15 @@ namespace mitk
   */
   class MITKRIGIDREGISTRATION_EXPORT ImageRegistrationMethod : public ImageToImageFilter
   {
-
   public:
-
-    typedef itk::SingleValuedNonLinearOptimizer         OptimizerType;
-    typedef itk::ImageMaskSpatialObject< 3 >            MaskType;
+    typedef itk::SingleValuedNonLinearOptimizer OptimizerType;
+    typedef itk::ImageMaskSpatialObject<3> MaskType;
 
     mitkClassMacro(ImageRegistrationMethod, ImageToImageFilter);
 
-    itkFactorylessNewMacro(Self)
-    itkCloneMacro(Self)
+    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
 
-    static const int LINEARINTERPOLATOR = 0;
+      static const int LINEARINTERPOLATOR = 0;
     static const int NEARESTNEIGHBORINTERPOLATOR = 1;
 
     void SetObserver(RigidRegistrationObserver::Pointer observer);
@@ -60,11 +57,11 @@ namespace mitk
 
     virtual void GenerateData() override;
 
-    virtual void SetReferenceImage( Image::Pointer fixedImage);
+    virtual void SetReferenceImage(Image::Pointer fixedImage);
 
-    virtual void SetFixedMask( Image::Pointer fixedMask);
+    virtual void SetFixedMask(Image::Pointer fixedMask);
 
-    virtual void SetMovingMask( Image::Pointer movingMask);
+    virtual void SetMovingMask(Image::Pointer movingMask);
 
     void SetOptimizerScales(itk::Array<double> scales);
 
@@ -73,6 +70,8 @@ namespace mitk
     void SetMetric(itk::Object::Pointer metric);
 
     void SetOptimizer(itk::Object::Pointer optimizer);
+
+    void SetNumberOfLevels(unsigned int levels);
 
   protected:
     ImageRegistrationMethod();
@@ -86,15 +85,15 @@ namespace mitk
     Image::Pointer m_FixedMask;
     Image::Pointer m_MovingMask;
 
-    virtual void GenerateOutputInformation() override{};
-
+    virtual void GenerateOutputInformation() override {}
   private:
     itk::Object::Pointer m_Transform;
     itk::Object::Pointer m_Metric;
     itk::Object::Pointer m_Optimizer;
     itk::Array<double> m_OptimizerScales;
+
+    unsigned int m_MultiResolutionScales;
   };
 }
 
 #endif // MITKIMAGEREGISTRATIONMETHOD_H
-

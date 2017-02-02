@@ -236,7 +236,7 @@ ALIASES                = "FIXME=\par Fix Me's:\n" \
                          "github{2}=<a href=\"https://github.com/MITK/MITK/blob/master/\1\">\2</a>" \
                          "deprecatedSince{1}=\xrefitem deprecatedSince\1 \"\" \"Functions deprecated as of \1\" \deprecated (as of \1) " \
                          "minimumCMakeVersion=@CMAKE_MINIMUM_REQUIRED_VERSION@" \
-                         "minimumQt4Version=@MITK_QT4_MINIMUM_VERSION@" \
+                         "minimumQt5Version=@MITK_QT5_MINIMUM_VERSION@" \
                          "imageMacro{3}=\image html \1 \2 \n \image latex \1 \2 width=\3cm" \
                          "developersguidemainpage{1}=\page \1 " \
                          "usersguidemainpage{1}=\page \1 " \
@@ -888,7 +888,9 @@ EXAMPLE_PATH           = @MITK_SOURCE_DIR@/Documentation/Snippets/ \
                          @MITK_SOURCE_DIR@/Modules/CppMicroServices/core/examples/ \
                          @MITK_DOXYGEN_OUTPUT_DIR@/html/extension-points/html/ \
                          @MITK_SOURCE_DIR@/Modules/OpenCL/Documentation/doxygen/snippets/ \
-                         @MITK_SOURCE_DIR@/Modules/IGT/Tutorial/
+                         @MITK_SOURCE_DIR@/Modules/IGT/Tutorial/ \
+                         @MITK_SOURCE_DIR@/Plugins/org.mitk.gui.qt.igtexamples/ \
+                         @MITK_SOURCE_DIR@/Plugins/org.mitk.gui.qt.igttracking/
 
 # If the value of the EXAMPLE_PATH tag contains directories, you can use the
 # EXAMPLE_PATTERNS tag to specify one or more wildcard pattern (like *.cpp and

@@ -41,9 +41,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 mitk::IGTLMessageProvider::IGTLMessageProvider()
   : mitk::IGTLDeviceSource()
 {
-  //setup measurements
-  this->m_Measurement = mitk::IGTLMeasurements::GetInstance();
-
   this->SetName("IGTLMessageProvider");
   //m_MultiThreader = itk::MultiThreader::New();
   m_StreamingTimeMutex = itk::FastMutexLock::New();
@@ -76,8 +73,22 @@ mitk::IGTLMessageProvider::~IGTLMessageProvider()
 
 void mitk::IGTLMessageProvider::Update()
 {
-   m_Measurement->AddMeasurement(1);
-   Superclass::Update();
+
+  Superclass::Update();
+
+  if (this->GetInput() != nullptr)
+  {
+    igtl::MessageBase::Pointer curMessage = this->GetInput()->GetMessage();
+    if (dynamic_cast<igtl::TrackingDataMessage*>(curMessage.GetPointer()) != nullptr)
+    {
+      igtl::TrackingDataMessage* tdMsg =
+        (igtl::TrackingDataMessage*)(curMessage.GetPointer());
+      igtl::TrackingDataElement::Pointer trackingData = igtl::TrackingDataElement::New();
+      tdMsg->GetTrackingDataElement(0, trackingData);
+      float x_pos, y_pos, z_pos;
+      trackingData->GetPosition(&x_pos, &y_pos, &z_pos);
+    }
+  }
 }
 
 void mitk::IGTLMessageProvider::GenerateData()

@@ -253,13 +253,15 @@ mitk::EquiDistantBlocksSorter
   {
     SliceGroupingAnalysisResult regularBlock = this->AnalyzeFileForITKImageSeriesReaderSpacingAssumption( remainingInput, m_AcceptTilt );
 
+#ifdef MBILOG_ENABLE_DEBUG
     DICOMDatasetList inBlock = regularBlock.GetBlockDatasets();
     DICOMDatasetList laterBlock = regularBlock.GetUnsortedDatasets();
     MITK_DEBUG << "Result: sorted 3D group with " << inBlock.size() << " files";
-    for (DICOMDatasetList::const_iterator diter = inBlock.begin(); diter != inBlock.end(); ++diter)
+    for (DICOMDatasetList::const_iterator diter = inBlock.cbegin(); diter != inBlock.cend(); ++diter)
       MITK_DEBUG << "  IN  " << (*diter)->GetFilenameIfAvailable();
-    for (DICOMDatasetList::const_iterator diter = laterBlock.begin(); diter != laterBlock.end(); ++diter)
+    for (DICOMDatasetList::const_iterator diter = laterBlock.cbegin(); diter != laterBlock.cend(); ++diter)
       MITK_DEBUG << " OUT  " << (*diter)->GetFilenameIfAvailable();
+#endif // MBILOG_ENABLE_DEBUG
 
     outputs.push_back( regularBlock.GetBlockDatasets() );
     m_SliceGroupingResults.push_back( regularBlock );
@@ -270,8 +272,8 @@ mitk::EquiDistantBlocksSorter
   this->SetNumberOfOutputs(numberOfOutputs);
 
   unsigned int outputIndex(0);
-  for (auto oIter = outputs.begin();
-       oIter != outputs.end();
+  for (auto oIter = outputs.cbegin();
+       oIter != outputs.cend();
        ++outputIndex, ++oIter)
   {
     this->SetOutput(outputIndex, *oIter);
@@ -359,14 +361,14 @@ mitk::EquiDistantBlocksSorter
   MITK_DEBUG << "Analyzing " << datasets.size() << " files for z-spacing assumption of ITK's ImageSeriesReader (group tilted: " << groupImagesWithGantryTilt << ")";
   unsigned int fileIndex(0);
   double toleratedOriginError(0.005); // default: max. 1/10mm error when measurement crosses 20 slices in z direction (too strict? we don't know better)
-  for (auto dsIter = datasets.begin();
-       dsIter != datasets.end();
+  for (auto dsIter = datasets.cbegin();
+       dsIter != datasets.cend();
        ++dsIter, ++fileIndex)
   {
     bool fileFitsIntoPattern(false);
     std::string thisOriginString;
     // Read tag value into point3D. PLEASE replace this by appropriate GDCM code if you figure out how to do that
-    thisOriginString = (*dsIter)->GetTagValueAsString( tagImagePositionPatient );
+    thisOriginString = (*dsIter)->GetTagValueAsString(tagImagePositionPatient).value;
 
     if (thisOriginString.empty())
     {
@@ -440,7 +442,7 @@ mitk::EquiDistantBlocksSorter
 
         Vector3D right; right.Fill(0.0);
         Vector3D up; right.Fill(0.0); // might be down as well, but it is just a name at this point
-        std::string orientationValue = (*dsIter)->GetTagValueAsString( tagImageOrientation );
+        std::string orientationValue = (*dsIter)->GetTagValueAsString( tagImageOrientation ).value;
         DICOMStringToOrientationVectors( orientationValue, right, up, ignoredConversionError );
 
         GantryTiltInformation tiltInfo( lastDifferentOrigin, thisOrigin, right, up, 1 );
@@ -555,9 +557,9 @@ mitk::EquiDistantBlocksSorter
       DICOMDatasetAccess* lastDataset = datasets.back();
       unsigned int numberOfSlicesApart = datasets.size() - 1;
 
-      std::string orientationString = firstDataset->GetTagValueAsString( tagImageOrientation );
-      std::string firstOriginString = firstDataset->GetTagValueAsString( tagImagePositionPatient );
-      std::string lastOriginString = lastDataset->GetTagValueAsString( tagImagePositionPatient );
+      std::string orientationString = firstDataset->GetTagValueAsString( tagImageOrientation ).value;
+      std::string firstOriginString = firstDataset->GetTagValueAsString( tagImagePositionPatient ).value;
+      std::string lastOriginString = lastDataset->GetTagValueAsString( tagImagePositionPatient ).value;
 
       result.FlagGantryTilt( GantryTiltInformation::MakeFromTagValues( firstOriginString, lastOriginString, orientationString, numberOfSlicesApart ));
     }

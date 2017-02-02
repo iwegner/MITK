@@ -39,12 +39,13 @@ set(MITK_PLUGINS
   org.mitk.gui.qt.properties:ON
   org.mitk.gui.qt.basicimageprocessing:OFF
   org.mitk.gui.qt.dicom:OFF
+  org.mitk.gui.qt.dicominspector:OFF
   org.mitk.gui.qt.diffusionimaging:OFF
   org.mitk.gui.qt.dosevisualization:OFF
   org.mitk.gui.qt.geometrytools:OFF
   org.mitk.gui.qt.igtexamples:OFF
   org.mitk.gui.qt.igttracking:OFF
-  org.mitk.gui.qt.igtlplugin:OFF
+  org.mitk.gui.qt.openigtlink:OFF
   org.mitk.gui.qt.imagecropper:OFF
   org.mitk.gui.qt.imagenavigator:ON
   org.mitk.gui.qt.viewnavigator:OFF
@@ -59,6 +60,7 @@ set(MITK_PLUGINS
   org.mitk.gui.qt.segmentation:OFF
   org.mitk.gui.qt.simulation:OFF
   org.mitk.gui.qt.aicpregistration:OFF
+  org.mitk.gui.qt.renderwindowmanager:OFF
   org.mitk.gui.qt.toftutorial:OFF
   org.mitk.gui.qt.tofutil:OFF
   org.mitk.gui.qt.tubegraph:OFF
@@ -67,6 +69,18 @@ set(MITK_PLUGINS
   org.mitk.gui.qt.volumevisualization:OFF
   org.mitk.gui.qt.eventrecorder:OFF
   org.mitk.gui.qt.xnat:OFF
+  org.mitk.gui.qt.igt.app.echotrack:OFF
   org.mitk.gui.qt.spectrocamrecorder:OFF
   org.mitk.gui.qt.classificationsegmentation:OFF
+  org.mitk.gui.qt.overlaymanager:OFF
+  org.mitk.gui.qt.multilabelsegmentation:ON
+  org.mitk.matchpoint.core.helper:OFF
+  org.mitk.gui.qt.matchpoint.algorithm.browser:OFF
+  org.mitk.gui.qt.matchpoint.algorithm.control:OFF
+  org.mitk.gui.qt.matchpoint.algorithm.batch:OFF
+  org.mitk.gui.qt.matchpoint.mapper:OFF
+  org.mitk.gui.qt.matchpoint.framereg:OFF
+  org.mitk.gui.qt.matchpoint.visualizer:OFF
+  org.mitk.gui.qt.matchpoint.evaluator:OFF
+  org.mitk.gui.qt.matchpoint.manipulator:OFF
 )

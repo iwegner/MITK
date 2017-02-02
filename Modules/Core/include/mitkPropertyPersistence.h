@@ -17,8 +17,8 @@ See LICENSE.txt or http://www.mitk.org for details.
 #ifndef mitkPropertyPersistence_h
 #define mitkPropertyPersistence_h
 
-#include <mitkIPropertyPersistence.h>
 #include <map>
+#include <mitkIPropertyPersistence.h>
 
 namespace mitk
 {
@@ -28,22 +28,35 @@ namespace mitk
     PropertyPersistence();
     ~PropertyPersistence();
 
-    bool AddInfo(const std::string& propertyName, PropertyPersistenceInfo::Pointer info, bool overwrite) override;
-    PropertyPersistenceInfo::Pointer GetInfo(const std::string& propertyName) override;
-    bool HasInfo(const std::string& propertyName) override;
-    void RemoveAllInfos() override;
-    void RemoveInfo(const std::string& propertyName) override;
+    typedef IPropertyPersistence::InfoResultType InfoResultType;
+
+    bool AddInfo(const PropertyPersistenceInfo *info, bool overwrite) override;
+    InfoResultType GetInfo(const std::string &propertyName, bool allowNameRegEx) const override;
+    InfoResultType GetInfo(const std::string &propertyName,
+                           const MimeTypeNameType &mime,
+                           bool allowMimeWildCard,
+                           bool allowNameRegEx) const override;
+    InfoResultType GetInfoByKey(const std::string &persistenceKey, bool allowKeyRegEx) const override;
+    bool HasInfo(const std::string &propertyName, bool allowNameRegEx) const override;
+    void RemoveAllInfo() override;
+    void RemoveInfo(const std::string &propertyName) override;
+    void RemoveInfo(const std::string &propertyName, const MimeTypeNameType &mime) override;
 
   private:
-    typedef std::map<std::string, PropertyPersistenceInfo::Pointer> InfoMap;
-    typedef InfoMap::const_iterator InfoMapConstIterator;
-    typedef InfoMap::iterator InfoMapIterator;
+    typedef std::multimap<const std::string, PropertyPersistenceInfo::ConstPointer> InfoMap;
 
-    PropertyPersistence(const PropertyPersistence&);
-    PropertyPersistence& operator=(const PropertyPersistence&);
+    /**Helper function that selects */
+    using SelectFunctionType = std::function<bool(const InfoMap::value_type &)>;
+    static InfoMap SelectInfo(const InfoMap &infoMap, const SelectFunctionType &selectFunction);
 
-    InfoMap m_Infos;
+    PropertyPersistence(const PropertyPersistence &);
+    PropertyPersistence &operator=(const PropertyPersistence &);
+
+    InfoMap m_InfoMap;
   };
+
+  /**Creates an unmanaged (!) instance of PropertyPersistence for testing purposes.*/
+  MITKCORE_EXPORT IPropertyPersistence *CreateTestInstancePropertyPersistence();
 }
 
 #endif

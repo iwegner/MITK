@@ -1,4 +1,5 @@
 set(MODULE_TESTS
+  mitkColorSequenceRainbowTest.cpp
   mitkMeshTest.cpp
   mitkMultiStepperTest.cpp
   mitkOrganTypePropertyTest.cpp
@@ -9,7 +10,7 @@ set(MODULE_IMAGE_TESTS
   mitkCompressedImageContainerTest.cpp #only runs on images
 )
 
-set(MODULE_TESTIMAGES
+set(MODULE_TESTIMAGE
   US4DCyl.nrrd
   Pic3D.nrrd
   Pic2DplusT.nrrd

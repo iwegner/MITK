@@ -165,7 +165,10 @@
          <bool>false</bool>
         </property>
         <property name="rowCount">
-         <number>7</number>
+         <number>14</number>
+        </property>
+        <property name="columnCount">
+         <number>1</number>
         </property>
         <attribute name="horizontalHeaderVisible">
          <bool>false</bool>
@@ -213,6 +216,11 @@
         </row>
         <row>
          <property name="text">
+          <string>Median</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
           <string>StdDev</string>
          </property>
         </row>
@@ -241,6 +249,36 @@
           <string>V (mm³)</string>
          </property>
         </row>
+        <row>
+         <property name="text">
+          <string>Skewness</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Kurtosis</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Uniformity</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>Entropy</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>MPP</string>
+         </property>
+        </row>
+        <row>
+         <property name="text">
+          <string>UPP</string>
+         </property>
+        </row>
         <column>
          <property name="text">
           <string>0</string>
@@ -254,13 +292,48 @@
          <property name="spacing">
           <number>0</number>
          </property>
-         <property name="margin">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <item>
           <widget class="QPushButton" name="m_ButtonCopyStatisticsToClipboard">
            <property name="text">
             <string>Copy to Clipboard</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QCheckBox" name="m_CheckBox4dCompleteTable">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>copy complete table</string>
            </property>
           </widget>
          </item>
@@ -290,8 +363,8 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>150</width>
-       <height>160</height>
+       <width>400</width>
+       <height>450</height>
       </size>
      </property>
      <property name="title">
@@ -391,6 +464,16 @@
           </widget>
          </item>
          <item>
+          <widget class="QCheckBox" name="m_ShowSubchartCheckBox">
+           <property name="text">
+            <string>Show Subchart</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QFrame" name="m_BinSizeFrame">
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -399,13 +482,22 @@
             <enum>QFrame::Raised</enum>
            </property>
            <layout class="QGridLayout" name="gridLayout">
-            <property name="margin">
+            <property name="leftMargin">
+             <number>0</number>
+            </property>
+            <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
              <number>0</number>
             </property>
             <property name="spacing">
              <number>0</number>
             </property>
-            <item row="0" column="0">
+            <item row="1" column="0">
              <widget class="QLabel" name="m_HistogramBinSizeCaptionLabel">
               <property name="minimumSize">
                <size>
@@ -424,7 +516,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
+            <item row="1" column="1">
              <widget class="QDoubleSpinBox" name="m_HistogramBinSizeSpinbox">
               <property name="toolTip">
                <string>Press enter to recalculate statistics with new bin size.</string>
@@ -442,7 +534,7 @@
                <double>1000000.000000000000000</double>
               </property>
               <property name="value">
-               <double>10.000000000000000</double>
+               <double>100.000000000000000</double>
               </property>
              </widget>
             </item>
@@ -454,10 +546,16 @@
       </item>
       <item>
        <widget class="QStackedWidget" name="m_StatisticsWidgetStack">
+        <property name="minimumSize">
+         <size>
+          <width>0</width>
+          <height>0</height>
+         </size>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QmitkHistogramJSWidget" name="m_JSHistogram">
+        <widget class="QmitkC3jsWidget" name="m_JSHistogram">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -480,7 +578,16 @@
          <property name="spacing">
           <number>0</number>
          </property>
-         <property name="margin">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
           <number>0</number>
          </property>
          <item>
@@ -497,8 +604,8 @@
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>40</width>
-             <height>20</height>
+             <width>413</width>
+             <height>17</height>
             </size>
            </property>
           </spacer>
@@ -526,10 +633,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QmitkHistogramJSWidget</class>
+   <class>QmitkC3jsWidget</class>
    <extends>QWidget</extends>
-   <header>QmitkHistogramJSWidget.h</header>
-   <container>1</container>
+   <header location="global">QmitkC3jsWidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

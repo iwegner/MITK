@@ -19,27 +19,27 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkPlaneGeometry.h>
 #include <mitkSurface.h>
 #include <vtkCellArray.h>
+#include <vtkPoints.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataNormals.h>
-#include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
-static mitk::Point2D GetCenterPoint(const mitk::PlanarFigure::PolyLineType& polyLine)
+static mitk::Point2D GetCenterPoint(const mitk::PlanarFigure::PolyLineType &polyLine)
 {
   mitk::Point2D centerPoint;
 
   centerPoint[0] = 0;
   centerPoint[1] = 0;
 
-  auto polyLineEnd = polyLine.end();
+  auto polyLineEnd = polyLine.cend();
 
-  for (auto polyLineIter = polyLine.begin(); polyLineIter != polyLineEnd; ++polyLineIter)
+  for (auto polyLineIter = polyLine.cbegin(); polyLineIter != polyLineEnd; ++polyLineIter)
   {
     centerPoint[0] += static_cast<mitk::Point2D>(*polyLineIter)[0];
     centerPoint[1] += static_cast<mitk::Point2D>(*polyLineIter)[1];
   }
 
-  size_t numPoints = polyLine.size();
+  const size_t numPoints = polyLine.size();
 
   centerPoint[0] /= numPoints;
   centerPoint[1] /= numPoints;
@@ -47,18 +47,18 @@ static mitk::Point2D GetCenterPoint(const mitk::PlanarFigure::PolyLineType& poly
   return centerPoint;
 }
 
-static mitk::Point2D GetCenterPoint(mitk::PlanarFigure* planarFigure)
+static mitk::Point2D GetCenterPoint(mitk::PlanarFigure *planarFigure)
 {
   mitk::Point2D centerPoint;
 
   centerPoint[0] = 0;
   centerPoint[1] = 0;
 
-  size_t numPolyLines = planarFigure->GetPolyLinesSize();
+  const size_t numPolyLines = planarFigure->GetPolyLinesSize();
 
   for (size_t i = 0; i < numPolyLines; ++i)
   {
-    mitk::Point2D polyLineCenterPoint = GetCenterPoint(planarFigure->GetPolyLine(i));
+    const mitk::Point2D polyLineCenterPoint = GetCenterPoint(planarFigure->GetPolyLine(i));
 
     centerPoint[0] += polyLineCenterPoint[0];
     centerPoint[1] += polyLineCenterPoint[1];
@@ -70,9 +70,11 @@ static mitk::Point2D GetCenterPoint(mitk::PlanarFigure* planarFigure)
   return centerPoint;
 }
 
-static mitk::Vector3D GetBendDirection(const mitk::PlaneGeometry* planeGeometry, const mitk::Point2D& centerPoint2d, const mitk::Vector2D& bendDirection2d)
+static mitk::Vector3D GetBendDirection(const mitk::PlaneGeometry *planeGeometry,
+                                       const mitk::Point2D &centerPoint2d,
+                                       const mitk::Vector2D &bendDirection2d)
 {
-  mitk::Point2D point2d = centerPoint2d + bendDirection2d;
+  const mitk::Point2D point2d = centerPoint2d + bendDirection2d;
 
   mitk::Point3D point3d;
   planeGeometry->Map(point2d, point3d);
@@ -87,12 +89,7 @@ static mitk::Vector3D GetBendDirection(const mitk::PlaneGeometry* planeGeometry,
 }
 
 mitk::ExtrudePlanarFigureFilter::ExtrudePlanarFigureFilter()
-  : m_Length(1),
-    m_NumberOfSegments(1),
-    m_TwistAngle(0),
-    m_BendAngle(0),
-    m_FlipDirection(false),
-    m_FlipNormals(false)
+  : m_Length(1), m_NumberOfSegments(1), m_TwistAngle(0), m_BendAngle(0), m_FlipDirection(false), m_FlipNormals(false)
 {
   m_BendDirection[0] = 0;
   m_BendDirection[1] = 0;
@@ -121,7 +118,7 @@ void mitk::ExtrudePlanarFigureFilter::GenerateData()
   if (m_BendAngle != 0 && m_BendDirection[0] == 0 && m_BendDirection[1] == 0)
     mitkThrow() << "Bend direction is zero-length vector!";
 
-  PlanarFigure* input = dynamic_cast<PlanarFigure*>(this->GetPrimaryInput());
+  PlanarFigure *input = dynamic_cast<PlanarFigure *>(this->GetPrimaryInput());
 
   if (input == nullptr)
     mitkThrow() << "Primary input is not a planar figure!";
@@ -131,7 +128,7 @@ void mitk::ExtrudePlanarFigureFilter::GenerateData()
   if (numPolyLines == 0)
     mitkThrow() << "Primary input does not contain any poly lines!";
 
-  const PlaneGeometry* planeGeometry = dynamic_cast<const PlaneGeometry*>(input->GetPlaneGeometry());
+  const PlaneGeometry *planeGeometry = dynamic_cast<const PlaneGeometry *>(input->GetPlaneGeometry());
 
   if (planeGeometry == nullptr)
     mitkThrow() << "Could not get plane geometry from primary input!";
@@ -139,17 +136,16 @@ void mitk::ExtrudePlanarFigureFilter::GenerateData()
   Vector3D planeNormal = planeGeometry->GetNormal();
   planeNormal.Normalize();
 
-  Point2D centerPoint2d = GetCenterPoint(input);
+  const Point2D centerPoint2d = GetCenterPoint(input);
 
   Point3D centerPoint3d;
   planeGeometry->Map(centerPoint2d, centerPoint3d);
 
-  Vector3D bendDirection3d = m_BendAngle != 0
-    ? ::GetBendDirection(planeGeometry, centerPoint2d, m_BendDirection)
-    : Vector3D();
+  const Vector3D bendDirection3d =
+    m_BendAngle != 0 ? ::GetBendDirection(planeGeometry, centerPoint2d, m_BendDirection) : Vector3D();
 
-  ScalarType radius = m_Length * (360 / m_BendAngle) / (2 * vnl_math::pi);
-  Vector3D scaledBendDirection3d = bendDirection3d * radius;
+  const ScalarType radius = m_Length * (360 / m_BendAngle) / (2 * vnl_math::pi);
+  const Vector3D scaledBendDirection3d = bendDirection3d * radius;
 
   Vector3D bendAxis = itk::CrossProduct(planeNormal, bendDirection3d);
   bendAxis.Normalize();
@@ -160,8 +156,8 @@ void mitk::ExtrudePlanarFigureFilter::GenerateData()
 
   for (size_t i = 0; i < numPolyLines; ++i)
   {
-    PolyLine polyLine = input->GetPolyLine(i);
-    size_t numPoints = polyLine.size();
+    const PolyLine polyLine = input->GetPolyLine(i);
+    const size_t numPoints = polyLine.size();
 
     if (numPoints < 2)
       mitkThrow() << "Poly line " << i << " of primary input consists of less than two points!";
@@ -177,19 +173,15 @@ void mitk::ExtrudePlanarFigureFilter::GenerateData()
       crossSection.push_back(point);
     }
 
-    ScalarType segmentLength = m_Length / m_NumberOfSegments;
+    const ScalarType segmentLength = m_Length / m_NumberOfSegments;
     Vector3D translation = planeNormal * segmentLength;
 
-    bool bend = std::abs(m_BendAngle) > mitk::eps;
-    bool twist = std::abs(m_TwistAngle) > mitk::eps;
+    const bool bend = std::abs(m_BendAngle) > mitk::eps;
+    const bool twist = std::abs(m_TwistAngle) > mitk::eps;
 
-    ScalarType twistAngle = twist
-      ? m_TwistAngle / m_NumberOfSegments * vnl_math::pi / 180
-      : 0;
+    const ScalarType twistAngle = twist ? m_TwistAngle / m_NumberOfSegments * vnl_math::pi / 180 : 0;
 
-    ScalarType bendAngle = bend
-      ? m_BendAngle / m_NumberOfSegments * vnl_math::pi / 180
-      : 0;
+    ScalarType bendAngle = bend ? m_BendAngle / m_NumberOfSegments * vnl_math::pi / 180 : 0;
 
     if (m_FlipDirection)
     {
@@ -226,7 +218,7 @@ void mitk::ExtrudePlanarFigureFilter::GenerateData()
 
       for (size_t k = 0; k < numPoints; ++k)
       {
-        mitk::Point3D transformedPoint = transform->TransformPoint(crossSection[k]);
+        const mitk::Point3D transformedPoint = transform->TransformPoint(crossSection[k]);
         points->InsertNextPoint(transformedPoint.GetDataPointer());
       }
     }
@@ -278,7 +270,7 @@ void mitk::ExtrudePlanarFigureFilter::GenerateData()
 
   polyDataNormals->Update();
 
-  Surface* output = static_cast<Surface*>(this->GetPrimaryOutput());
+  Surface *output = static_cast<Surface *>(this->GetPrimaryOutput());
   output->SetVtkPolyData(polyDataNormals->GetOutput());
 }
 
@@ -288,19 +280,15 @@ void mitk::ExtrudePlanarFigureFilter::GenerateOutputInformation()
 
 itk::ProcessObject::DataObjectPointer mitk::ExtrudePlanarFigureFilter::MakeOutput(DataObjectPointerArraySizeType idx)
 {
-  return idx == 0
-    ? Surface::New().GetPointer()
-    : nullptr;
+  return idx == 0 ? Surface::New().GetPointer() : nullptr;
 }
 
-itk::ProcessObject::DataObjectPointer mitk::ExtrudePlanarFigureFilter::MakeOutput(const DataObjectIdentifierType& name)
+itk::ProcessObject::DataObjectPointer mitk::ExtrudePlanarFigureFilter::MakeOutput(const DataObjectIdentifierType &name)
 {
-  return this->IsIndexedOutputName(name)
-    ? this->MakeOutput(this->MakeIndexFromOutputName(name))
-    : nullptr;
+  return this->IsIndexedOutputName(name) ? this->MakeOutput(this->MakeIndexFromOutputName(name)) : nullptr;
 }
 
-void mitk::ExtrudePlanarFigureFilter::PrintSelf(std::ostream& os, itk::Indent indent) const
+void mitk::ExtrudePlanarFigureFilter::PrintSelf(std::ostream &os, itk::Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
 
@@ -312,12 +300,12 @@ void mitk::ExtrudePlanarFigureFilter::PrintSelf(std::ostream& os, itk::Indent in
   os << indent << "Flip Normals: " << m_FlipNormals << std::endl;
 }
 
-void mitk::ExtrudePlanarFigureFilter::SetInput(PlanarFigure* planarFigure)
+void mitk::ExtrudePlanarFigureFilter::SetInput(PlanarFigure *planarFigure)
 {
   this->SetPrimaryInput(planarFigure);
 }
 
-mitk::Surface* mitk::ExtrudePlanarFigureFilter::GetOutput()
+mitk::Surface *mitk::ExtrudePlanarFigureFilter::GetOutput()
 {
-  return static_cast<Surface*>(this->GetPrimaryOutput());
+  return static_cast<Surface *>(this->GetPrimaryOutput());
 }

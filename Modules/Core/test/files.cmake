@@ -29,6 +29,7 @@ set(MODULE_TESTS
   mitkEnumerationPropertyTest.cpp
   mitkFileReaderRegistryTest.cpp
   #mitkFileWriterRegistryTest.cpp
+  mitkFloatToStringTest.cpp
   mitkGenericPropertyTest.cpp
   mitkGeometry3DTest.cpp
   mitkGeometry3DEqualTest.cpp
@@ -58,6 +59,8 @@ set(MODULE_TESTS
   mitkProgressBarTest.cpp
   mitkPropertyTest.cpp
   mitkPropertyListTest.cpp
+  mitkPropertyPersistenceTest.cpp
+  mitkPropertyPersistenceInfoTest.cpp
   mitkSlicedGeometry3DTest.cpp
   mitkSliceNavigationControllerTest.cpp
   mitkSurfaceTest.cpp
@@ -72,8 +75,10 @@ set(MODULE_TESTS
   mitkTransferFunctionTest.cpp
   mitkStepperTest.cpp
   mitkRenderingManagerTest.cpp
+  mitkCompositePixelValueToStringTest.cpp
   vtkMitkThickSlicesFilterTest.cpp
   mitkNodePredicateSourceTest.cpp
+  mitkNodePredicateDataPropertyTest.cpp
   mitkVectorTest.cpp
   mitkClippedSurfaceBoundsCalculatorTest.cpp
   mitkExceptionTest.cpp
@@ -103,9 +108,14 @@ set(MODULE_TESTS
   mitkImageToSurfaceFilterTest.cpp
   mitkEqualTest.cpp
   mitkLineTest.cpp
+  mitkArbitraryTimeGeometryTest
   mitkItkImageIOTest.cpp
   mitkRotatedSlice4DTest.cpp
   mitkLevelWindowManagerCppUnitTest.cpp
+  mitkVectorPropertyTest.cpp
+  mitkTemporoSpatialStringPropertyTest.cpp
+  mitkPropertyNameHelperTest.cpp
+  mitkNodePredicateGeometryTest.cpp
 )
 
 if(MITK_ENABLE_RENDERING_TESTING)
@@ -114,6 +124,7 @@ set(MODULE_TESTS
   mitkPlaneGeometryDataMapper2DTest.cpp
   mitkPointSetDataInteractorTest.cpp #since mitkInteractionTestHelper is currently creating a vtkRenderWindow
   mitkSurfaceVtkMapper2DTest.cpp #new rendering test in CppUnit style
+  mitkSurfaceVtkMapper2D3DTest.cpp # comparisons/consistency 2D/3D
 )
 endif()
 
@@ -130,14 +141,14 @@ set(MODULE_SURFACE_TESTS
 )
 
 # list of images for which the tests are run
-set(MODULE_TESTIMAGES
+set(MODULE_TESTIMAGE
   US4DCyl.nrrd
   Pic3D.nrrd
   Pic2DplusT.nrrd
   BallBinary30x30x30.nrrd
   Png2D-bw.png
 )
-set(MODULE_TESTSURFACES
+set(MODULE_TESTSURFACE
   binary.stl
   ball.stl
 )

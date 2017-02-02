@@ -37,6 +37,7 @@
 
     <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="FigurePlaced" >
       <condition name="point_is_valid" />
+      <condition name="figure_is_editable" />
       <condition name="figure_is_finished" inverted="true" />
       <action name="add_new_point" ID="10" /> <!-- AcADDPOINT -->
     </transition>
@@ -48,16 +49,19 @@
 
   <state name="ControlPointSelected">
     <transition event_class="MouseMoveEvent" event_variant="PrimaryButtonPressedAndMouseMove" target="ControlPointSelected" >
+      <condition name="figure_is_editable" />
       <action name="move_current_point" ID="90" /> <!-- AcMOVEPOINT -->
     </transition>
 
     <transition event_class="MouseReleaseEvent" event_variant="PrimaryButtonReleased" target="EditFigure" >
       <action name="deselect_point" ID="76" /> <!-- AcDESELECTPOINT -->
     </transition>
+
   </state>
 
   <state name="PlaceFigure">
     <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="FigurePlaced" >
+      <condition name="figure_is_editable" />
       <action name="add_initial_point" ID="11" /> <!-- AcADD -->
     </transition>
   </state>
@@ -78,6 +82,7 @@
 
     <transition event_class="InteractionKeyEvent" event_variant="StdDelete" target="Start" > <!-- delete figure -->
       <condition name="figure_is_selected" />
+      <condition name="figure_can_be_deleted" />
       <action name="delete_figure" />
     </transition>
   </state>
@@ -92,6 +97,8 @@
     <transition event_class="MouseMoveEvent" event_variant="MouseMove" target="HoveringOverFigure" >  <!-- continue hovering -->
       <condition name="hovering_above_point" inverted="true"/>
       <condition name="hovering_above_figure" />
+      <condition name="figure_is_editable" />
+      <condition name="points_can_be_added_or_removed" />
       <action name="set_preview_point_position" />
     </transition>
 
@@ -105,25 +112,30 @@
       <condition name="figure_is_on_current_slice" />
       <condition name="figure_is_selected" />
       <condition name="point_is_valid" />
+      <condition name="figure_is_editable" />
       <condition name="figure_is_finished" inverted="true" />
       <action name="add_new_point" ID="10" /> <!-- AcADDPOINT -->
     </transition>
-    
-    <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="FigurePlacedByDrag" >
+
+<!--    <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="FigurePlacedByDrag" >
       <condition name="figure_is_on_current_slice" />
       <condition name="figure_is_selected" />
       <condition name="point_is_valid" />
       <condition name="figure_is_finished" />
+      <condition name="figure_is_editable" />
       <condition name="reset_on_point_select_needed" />
+      <action name="reset_on_point_select" />
       <action name="move_current_point" />
-    </transition>
+    </transition> -->
 
     <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="FigurePlacedByDrag" >
       <condition name="figure_is_on_current_slice" />
       <condition name="figure_is_selected" />
       <condition name="point_is_valid" />
       <condition name="figure_is_finished" />
+      <condition name="figure_is_editable" />
       <condition name="reset_on_point_select_needed" />
+      <action name="reset_on_point_select" />
       <action name="move_current_point" />
     </transition>
 
@@ -135,6 +147,7 @@
 
     <transition event_class="MouseMoveEvent" event_variant="PrimaryButtonPressedAndMouseMove" target="FigurePlacedByDrag" >
       <condition name="figure_is_on_current_slice" />
+      <condition name="figure_is_editable" />
       <action name="move_current_point" ID="90" />
     </transition>
 
@@ -158,14 +171,14 @@
       <action name="end_hovering" />
       <action name="select_point" />
     </transition>
-    
+
     <transition event_class="MouseMoveEvent" event_variant="MouseMove" target="HoveringOverPoint" >  <!-- continue hovering -->
       <condition name="hovering_above_point" />
       <action name="hide_preview_point" />
       <action name="select_point" />
     </transition>
   </state>
-  
+
   <state name="HoveringOverPoint">
     <transition event_class="MouseMoveEvent" event_variant="MouseMove" target="HoveringOverFigure" >
       <condition name="hovering_above_point" inverted="true" />
@@ -185,7 +198,9 @@
     <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="FigurePlaced" >
       <condition name="figure_is_on_current_slice" />
       <condition name="figure_is_selected" />
+      <condition name="figure_is_editable" />
       <condition name="reset_on_point_select_needed" />
+      <action name="reset_on_point_select" />
     </transition>
 
     <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="ControlPointSelected" >
@@ -194,23 +209,25 @@
       <condition name="reset_on_point_select_needed" inverted="true" />
     </transition>
 
-    <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="HoveringOverPoint" >
+    <transition event_class="MousePressEvent" event_variant="PrimaryButtonPressed" target="ControlPointSelected" >
       <!-- select the control-point under the cursor -->
       <condition name="figure_is_on_current_slice" />
       <condition name="figure_is_selected" inverted="true" />
       <action name="select_figure" />
       <action name="select_point" />
     </transition>
-
+<!--
     <transition event_class="MouseMoveEvent" event_variant="PrimaryButtonPressedAndMouseMove" target="FigurePlacedByDrag" >
       <condition name="figure_is_on_current_slice" />
       <action name="move_current_point" ID="90" />
     </transition>
+-->
 
     <transition event_class="MousePressEvent" event_variant="SecondaryButtonPressed" target="HoveringAfterPointRemovedGuardState" >
       <!-- remove the control-point under the cursor -->
       <condition name="figure_is_on_current_slice" />
       <condition name="points_can_be_added_or_removed" />
+      <condition name="figure_is_editable" />
       <action name="remove_selected_point" />
     </transition>
 
@@ -239,6 +256,7 @@
   <state name="FigurePlacedByDrag">
     <transition event_class="MouseMoveEvent" event_variant="PrimaryButtonPressedAndMouseMove" target="FigurePlacedByDrag" >
       <!-- move the currently selected point by drag -->
+      <condition name="figure_is_editable" />
       <action name="move_current_point" ID="90" />
     </transition>
 
@@ -247,6 +265,7 @@
       <!-- we just put the point there, hovering by definition -->
       <condition name="minimal_figure_is_finished" />
       <condition name="figure_is_placed" />
+      <condition name="figure_is_editable" />
       <action name="select_point" />
       <action name="end_interaction" />
     </transition>
@@ -258,7 +277,6 @@
       <condition name="figure_is_finished" />
       <condition name="figure_is_placed" inverted="true" />
       <action name="select_point" />
-      <!--<action name="end_interaction" />-->
       <action name="finalize_figure" />
     </transition>
 

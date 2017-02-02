@@ -16,16 +16,16 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "mitkMultilabelObjectFactory.h"
 
-#include "mitkProperties.h"
 #include "mitkBaseRenderer.h"
-#include "mitkDataNode.h"
 #include "mitkCoreObjectFactory.h"
-
+#include "mitkDataNode.h"
+#include "mitkProperties.h"
+#include <mitkCoreServices.h>
+#include <mitkIPropertyFilters.h>
 #include <mitkLabelSetImageVtkMapper2D.h>
+#include <mitkPropertyFilter.h>
 
-
-mitk::MultilabelObjectFactory::MultilabelObjectFactory()
-:CoreObjectFactoryBase()
+mitk::MultilabelObjectFactory::MultilabelObjectFactory() : CoreObjectFactoryBase()
 {
   static bool alreadyDone = false;
   if (!alreadyDone)
@@ -40,17 +40,16 @@ mitk::MultilabelObjectFactory::MultilabelObjectFactory()
 
 mitk::MultilabelObjectFactory::~MultilabelObjectFactory()
 {
-
 }
 
-mitk::Mapper::Pointer mitk::MultilabelObjectFactory::CreateMapper(mitk::DataNode* node, MapperSlotId id)
+mitk::Mapper::Pointer mitk::MultilabelObjectFactory::CreateMapper(mitk::DataNode *node, MapperSlotId id)
 {
-  mitk::Mapper::Pointer newMapper=NULL;
+  mitk::Mapper::Pointer newMapper = NULL;
   mitk::BaseData *data = node->GetData();
 
-  if ( id == mitk::BaseRenderer::Standard2D )
+  if (id == mitk::BaseRenderer::Standard2D)
   {
-    if((dynamic_cast<mitk::LabelSetImage*>(data)!=NULL))
+    if ((dynamic_cast<mitk::LabelSetImage *>(data) != NULL))
     {
       newMapper = mitk::LabelSetImageVtkMapper2D::New();
       newMapper->SetDataNode(node);
@@ -59,25 +58,35 @@ mitk::Mapper::Pointer mitk::MultilabelObjectFactory::CreateMapper(mitk::DataNode
   return newMapper;
 }
 
-void mitk::MultilabelObjectFactory::SetDefaultProperties(mitk::DataNode* node)
+void mitk::MultilabelObjectFactory::SetDefaultProperties(mitk::DataNode *node)
 {
-
-  if(node==NULL)
+  if (node == nullptr)
     return;
 
-  mitk::DataNode::Pointer nodePointer = node;
+  if (node->GetData() == nullptr)
+    return;
 
-  if(node->GetData() ==NULL)
-       return;
+  if (dynamic_cast<LabelSetImage *>(node->GetData()) != nullptr)
+  {
+    mitk::LabelSetImageVtkMapper2D::SetDefaultProperties(node);
 
- if( dynamic_cast<LabelSetImage*>(node->GetData())!=NULL )
- {
-   mitk::LabelSetImageVtkMapper2D::SetDefaultProperties(node);
-//     mitk::LabelSetImageVtkMapper3D::SetDefaultProperties(node);
- }
+    auto propertyFilters = CoreServices::GetPropertyFilters();
+
+    if (propertyFilters != nullptr)
+    {
+      PropertyFilter labelSetImageFilter;
+      labelSetImageFilter.AddEntry("binaryimage.hoveringannotationcolor", PropertyFilter::Blacklist);
+      labelSetImageFilter.AddEntry("binaryimage.hoveringcolor", PropertyFilter::Blacklist);
+      labelSetImageFilter.AddEntry("binaryimage.selectedannotationcolor", PropertyFilter::Blacklist);
+      labelSetImageFilter.AddEntry("binaryimage.selectedcolor", PropertyFilter::Blacklist);
+      labelSetImageFilter.AddEntry("outline binary shadow color", PropertyFilter::Blacklist);
+
+      propertyFilters->AddFilter(labelSetImageFilter, "LabelSetImage");
+    }
+  }
 }
 
-const char* mitk::MultilabelObjectFactory::GetFileExtensions()
+const char *mitk::MultilabelObjectFactory::GetFileExtensions()
 {
   std::string fileExtension;
   this->CreateFileExtensions(m_FileExtensionsMap, fileExtension);
@@ -96,28 +105,23 @@ mitk::CoreObjectFactoryBase::MultimapType mitk::MultilabelObjectFactory::GetSave
 
 void mitk::MultilabelObjectFactory::CreateFileExtensionsMap()
 {
-
 }
 
-const char* mitk::MultilabelObjectFactory::GetSaveFileExtensions()
+const char *mitk::MultilabelObjectFactory::GetSaveFileExtensions()
 {
   std::string fileExtension;
   this->CreateFileExtensions(m_SaveFileExtensionsMap, fileExtension);
   return fileExtension.c_str();
 }
 
-struct RegisterMultilabelObjectFactory{
-  RegisterMultilabelObjectFactory()
-    : m_Factory( mitk::MultilabelObjectFactory::New() )
+struct RegisterMultilabelObjectFactory
+{
+  RegisterMultilabelObjectFactory() : m_Factory(mitk::MultilabelObjectFactory::New())
   {
-    mitk::CoreObjectFactory::GetInstance()->RegisterExtraFactory( m_Factory );
+    mitk::CoreObjectFactory::GetInstance()->RegisterExtraFactory(m_Factory);
   }
 
-  ~RegisterMultilabelObjectFactory()
-  {
-    mitk::CoreObjectFactory::GetInstance()->UnRegisterExtraFactory( m_Factory );
-  }
-
+  ~RegisterMultilabelObjectFactory() { mitk::CoreObjectFactory::GetInstance()->UnRegisterExtraFactory(m_Factory); }
   mitk::MultilabelObjectFactory::Pointer m_Factory;
 };
 

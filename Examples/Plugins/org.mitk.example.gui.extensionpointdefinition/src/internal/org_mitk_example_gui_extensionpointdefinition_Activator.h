@@ -14,7 +14,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-
 #ifndef org_mitk_example_gui_extensionpointdefinition_Activator_H
 #define org_mitk_example_gui_extensionpointdefinition_Activator_H
 
@@ -22,25 +21,20 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include "ChangeTextRegistry.h"
 
-class org_mitk_example_gui_extensionpointdefinition_Activator :
-  public QObject, public ctkPluginActivator
+class org_mitk_example_gui_extensionpointdefinition_Activator : public QObject, public ctkPluginActivator
 {
   Q_OBJECT
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
   Q_PLUGIN_METADATA(IID "org_mitk_example_gui_extensionpointdefinition")
-#endif
   Q_INTERFACES(ctkPluginActivator)
 
 public:
-
-  void start(ctkPluginContext* context) override;
-  void stop(ctkPluginContext* context) override;
+  void start(ctkPluginContext *context) override;
+  void stop(ctkPluginContext *context) override;
 
   /**
   * Get the Registry (for extensions).
   */
-  static ChangeTextRegistry* getChangeTextRegistry();
-
+  static ChangeTextRegistry *getChangeTextRegistry();
 };
 
 #endif // org_mitk_example_gui_extensionpointdefinition_Activator_H

@@ -14,68 +14,66 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 ===================================================================*/
 
-
 #ifndef _MITK_SPLINE_VTK_MAPPER_3D__H
 #define _MITK_SPLINE_VTK_MAPPER_3D__H
 
-#include "mitkPointSetVtkMapper3D.h"
 #include "MitkMapperExtExports.h"
+#include "mitkPointSetVtkMapper3D.h"
 
 class vtkActor;
 class vtkAssembly;
 
 namespace mitk
 {
-  //##Documentation
-  //## @brief Vtk-based mapper for Splines
-  //##
-  //## properties looked for:
-  //## "line width" = with of the spline
-  //## @ingroup Mapper
-
-  /************************************************************************/
-  /*
-  *   - \b "line width": (FloatProperty) line width of the spline
-
+  /**
+  * @brief Vtk-based mapper for Splines.
+  *
+  * The mapper inherits from mitk::PointSetVTKMapper3D and renders a spline in 3D, using a mitk pointset as input.
+  *
+  *
+  * Properties that can be set for splines which affect the mitk::SplineVtkMapper3D are:
+  *
+  *   - \b "line width": (FloatProperty) width of the spline
+  *
+  * There might be still some other, deprecated properties. These will not be documented anymore.
+  * Please check the source if you really need them.
+  *
+  * @ingroup Mapper
   */
-  /************************************************************************/
-class MITKMAPPEREXT_EXPORT SplineVtkMapper3D : public PointSetVtkMapper3D
-{
-public:
+  class MITKMAPPEREXT_EXPORT SplineVtkMapper3D : public PointSetVtkMapper3D
+  {
+  public:
+    mitkClassMacro(SplineVtkMapper3D, PointSetVtkMapper3D);
 
-    mitkClassMacro( SplineVtkMapper3D, PointSetVtkMapper3D );
+    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
 
-    itkFactorylessNewMacro(Self)
-    itkCloneMacro(Self)
-
-    virtual vtkProp* GetVtkProp(mitk::BaseRenderer *renderer) override;
+      virtual vtkProp *GetVtkProp(mitk::BaseRenderer *renderer) override;
     virtual void UpdateVtkTransform(mitk::BaseRenderer *renderer) override;
 
     bool SplinesAreAvailable();
 
-    vtkPolyData* GetSplinesPolyData();
+    vtkPolyData *GetSplinesPolyData();
 
-    vtkActor* GetSplinesActor();
+    vtkActor *GetSplinesActor();
 
     virtual void UpdateSpline();
 
-    itkSetMacro( SplineResolution, unsigned int );
+    itkSetMacro(SplineResolution, unsigned int);
 
-    itkGetMacro( SplineResolution, unsigned int );
+    itkGetMacro(SplineResolution, unsigned int);
 
-protected:
-
+  protected:
     SplineVtkMapper3D();
 
     virtual ~SplineVtkMapper3D();
 
-    virtual void GenerateDataForRenderer(mitk::BaseRenderer * renderer) override;
+    virtual void GenerateDataForRenderer(mitk::BaseRenderer *renderer) override;
 
     virtual void ApplyAllProperties(BaseRenderer *renderer, vtkActor *actor) override;
 
-    vtkActor* m_SplinesActor;
+    vtkActor *m_SplinesActor;
 
-    vtkPropAssembly* m_SplineAssembly;
+    vtkPropAssembly *m_SplineAssembly;
 
     bool m_SplinesAvailable;
 
@@ -84,10 +82,8 @@ protected:
     unsigned int m_SplineResolution;
 
     itk::TimeStamp m_SplineUpdateTime;
-};
+  };
 
-
-} //namespace mitk
-
+} // namespace mitk
 
 #endif

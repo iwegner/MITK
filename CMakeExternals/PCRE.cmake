@@ -5,11 +5,12 @@ if(MITK_USE_PCRE)
   if(DEFINED PCRE_DIR AND NOT EXISTS ${PCRE_DIR})
       message(FATAL_ERROR "PCRE_DIR variable is defined but corresponds to non-existing directory")
    endif()
-  if(NOT PCRE_DIR)
 
-    set(proj PCRE)
-    set(${proj}_DEPENDENCIES "")
-    set(${proj}_DEPENDS ${proj})
+  set(proj PCRE)
+  set(${proj}_DEPENDENCIES "")
+  set(${proj}_DEPENDS ${proj})
+
+  if(NOT PCRE_DIR)
 
     if(UNIX)
       # Some other projects (e.g. Swig) require a pcre-config script which is not
@@ -18,7 +19,7 @@ if(MITK_USE_PCRE)
         CONFIGURE_COMMAND <SOURCE_DIR>/./configure
         CC=${CMAKE_C_COMPILER}${CMAKE_C_COMPILER_ARG1}
         CFLAGS=-fPIC
-        "CXXFLAGS=-fPIC ${MITK_CXX11_FLAG} ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}"
+        "CXXFLAGS=-fPIC ${MITK_CXX14_FLAG} ${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}"
         "LDFLAGS=${CMAKE_LINKER_FLAGS} ${CMAKE_LINKER_FLAGS_RELEASE} ${_install_rpath_linkflag}"
         CXX=${CMAKE_CXX_COMPILER}${CMAKE_CXX_COMPILER_ARG1}
         --prefix=<INSTALL_DIR>

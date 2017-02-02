@@ -20,39 +20,53 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkBasePropertySerializer.h"
 
 #include "mitkProperties.h"
+#include <boost/lexical_cast.hpp>
 
 #include <MitkSceneSerializationBaseExports.h>
 
+#include <mitkLocaleSwitch.h>
+
 namespace mitk
 {
-
-class DoublePropertySerializer : public BasePropertySerializer
-{
+  class DoublePropertySerializer : public BasePropertySerializer
+  {
   public:
+    mitkClassMacro(DoublePropertySerializer, BasePropertySerializer);
+    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
 
-    mitkClassMacro( DoublePropertySerializer, BasePropertySerializer );
-    itkFactorylessNewMacro(Self)
-    itkCloneMacro(Self)
-
-    virtual TiXmlElement* Serialize() override
+      virtual TiXmlElement *Serialize() override
     {
-      if (const DoubleProperty* prop = dynamic_cast<const DoubleProperty*>(m_Property.GetPointer()))
+      if (const DoubleProperty *prop = dynamic_cast<const DoubleProperty *>(m_Property.GetPointer()))
       {
-        auto  element = new TiXmlElement("double");
-        element->SetDoubleAttribute("value", prop->GetValue());
+        LocaleSwitch localeSwitch("C");
+
+        auto element = new TiXmlElement("double");
+        element->SetAttribute("value", boost::lexical_cast<std::string>(prop->GetValue()));
         return element;
       }
-      else return nullptr;
+      else
+        return nullptr;
     }
 
-    virtual BaseProperty::Pointer Deserialize(TiXmlElement* element) override
+    virtual BaseProperty::Pointer Deserialize(TiXmlElement *element) override
     {
-      if (!element) return nullptr;
+      if (!element)
+        return nullptr;
 
-      double d;
-      if ( element->QueryDoubleAttribute( "value", &d ) == TIXML_SUCCESS )
+      LocaleSwitch localeSwitch("C");
+
+      std::string d;
+      if (element->QueryStringAttribute("value", &d) == TIXML_SUCCESS)
       {
-        return DoubleProperty::New(d).GetPointer();
+        try
+        {
+          return DoubleProperty::New(boost::lexical_cast<double>(d)).GetPointer();
+        }
+        catch (boost::bad_lexical_cast &e)
+        {
+          MITK_ERROR << "Could not parse string as number: " << e.what();
+          return nullptr;
+        }
       }
       else
       {
@@ -61,10 +75,9 @@ class DoublePropertySerializer : public BasePropertySerializer
     }
 
   protected:
-
     DoublePropertySerializer() {}
     virtual ~DoublePropertySerializer() {}
-};
+  };
 
 } // namespace
 
@@ -72,4 +85,3 @@ class DoublePropertySerializer : public BasePropertySerializer
 MITK_REGISTER_SERIALIZER(DoublePropertySerializer);
 
 #endif
-

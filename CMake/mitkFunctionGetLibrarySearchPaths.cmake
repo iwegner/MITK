@@ -1,10 +1,3 @@
-macro(_find_package package_name)
-  find_package(${package_name} REQUIRED PATHS ${${package_name}_DIR} PATH_SUFFIXES ${package_name} NO_DEFAULT_PATH NO_MODULE QUIET)
-  if(NOT ${package_name}_FOUND)
-    find_package(${package_name} REQUIRED)
-  endif()
-endmacro()
-
 function(mitkFunctionGetLibrarySearchPaths search_path intermediate_dir)
 
   set(_dir_candidates
@@ -20,11 +13,9 @@ function(mitkFunctionGetLibrarySearchPaths search_path intermediate_dir)
         )
   endif()
 
-  # Determine the Qt4/5 library installation prefix
+  # Determine the Qt5 library installation prefix
   set(_qmake_location )
-  if(MITK_USE_Qt4)
-    set(_qmake_location ${QT_QMAKE_EXECUTABLE})
-  elseif(MITK_USE_Qt5 AND TARGET ${Qt5Core_QMAKE_EXECUTABLE})
+  if(MITK_USE_Qt5 AND TARGET ${Qt5Core_QMAKE_EXECUTABLE})
     get_property(_qmake_location TARGET ${Qt5Core_QMAKE_EXECUTABLE}
                  PROPERTY IMPORT_LOCATION)
   endif()
@@ -45,15 +36,15 @@ function(mitkFunctionGetLibrarySearchPaths search_path intermediate_dir)
     if(_qt_install_libs)
       list(APPEND _dir_candidates ${_qt_install_libs})
     endif()
-  elseif(MITK_USE_QT)
+  elseif(MITK_USE_Qt5)
     message(WARNING "The qmake executable could not be found.")
   endif()
 
   get_property(_additional_paths GLOBAL PROPERTY MITK_ADDITIONAL_LIBRARY_SEARCH_PATHS)
 
   if(MITK_USE_HDF5)
-    _find_package(HDF5)
-    get_target_property(_location hdf5 LOCATION)
+    FIND_PACKAGE(HDF5 COMPONENTS C HL NO_MODULE REQUIRED shared)
+    get_target_property(_location hdf5-shared LOCATION)
     get_filename_component(_location ${_location} PATH)
     list(APPEND _additional_paths ${_location})
 
@@ -86,13 +77,18 @@ function(mitkFunctionGetLibrarySearchPaths search_path intermediate_dir)
     if(SOFA_DIR)
       list(APPEND _dir_candidates "${SOFA_DIR}/bin")
     endif()
-    if(REDLAND_INSTALL_DIR)
-      list(APPEND _dir_candidates "${REDLAND_INSTALL_DIR}/bin")
-    endif()
     list(APPEND _dir_candidates "${ITK_DIR}/bin")
   else()
     if(SOFA_DIR)
       list(APPEND _dir_candidates "${SOFA_DIR}/lib")
+    endif()
+  endif()
+
+  if(MITK_USE_MatchPoint)
+    if(WIN32)
+      list(APPEND _dir_candidates "${MatchPoint_DIR}/bin")
+    else()
+      list(APPEND _dir_candidates "${MatchPoint_DIR}/lib")
     endif()
   endif()
 

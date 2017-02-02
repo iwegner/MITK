@@ -81,7 +81,7 @@
 #! [PUBLIC|PRIVATE|INTERFACE] PACKAGE[|COMPONENT1[+COMPONENT2]...]
 #! \endverbatim
 #!        The default scope for package dependencies is PRIVATE.
-#! \param ADDITIONAL_LIBS List of addidtional private libraries linked to this module.
+#! \param ADDITIONAL_LIBS List of additional private libraries linked to this module.
 #!        The folder containing the library will be added to the global list of library search paths.
 #! \param CPP_FILES List of source files for this module. If the list is non-empty,
 #!        the module does not need to provide a files.cmake file or FILES_CMAKE argument.
@@ -404,20 +404,6 @@ function(mitk_create_module)
       endif()
     endif()
 
-    # Qt 4 case
-    if(MITK_USE_Qt4)
-      if(UI_FILES)
-        qt4_wrap_ui(Q${KITNAME}_GENERATED_UI_CPP ${UI_FILES})
-      endif()
-      if(MOC_H_FILES)
-        qt4_wrap_cpp(Q${KITNAME}_GENERATED_MOC_CPP ${MOC_H_FILES} OPTIONS -DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
-      endif()
-      if(QRC_FILES)
-        qt4_add_resources(Q${KITNAME}_GENERATED_QRC_CPP ${QRC_FILES})
-      endif()
-    endif()
-
-    # all the same for Qt 5
     if(MITK_USE_Qt5)
       if(UI_FILES)
         qt5_wrap_ui(Q${KITNAME}_GENERATED_UI_CPP ${UI_FILES})

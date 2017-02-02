@@ -20,37 +20,50 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkBasePropertySerializer.h"
 
 #include "mitkProperties.h"
+#include "mitkStringsToNumbers.h"
+#include <mitkLocaleSwitch.h>
 
 namespace mitk
 {
-
-class FloatPropertySerializer : public BasePropertySerializer
-{
+  class FloatPropertySerializer : public BasePropertySerializer
+  {
   public:
+    mitkClassMacro(FloatPropertySerializer, BasePropertySerializer);
+    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
 
-    mitkClassMacro( FloatPropertySerializer, BasePropertySerializer );
-    itkFactorylessNewMacro(Self)
-    itkCloneMacro(Self)
-
-    virtual TiXmlElement* Serialize() override
+      virtual TiXmlElement *Serialize() override
     {
-      if (const FloatProperty* prop = dynamic_cast<const FloatProperty*>(m_Property.GetPointer()))
+      if (const FloatProperty *prop = dynamic_cast<const FloatProperty *>(m_Property.GetPointer()))
       {
-        auto  element = new TiXmlElement("float");
-        element->SetDoubleAttribute("value", static_cast<double>(prop->GetValue()));
+        LocaleSwitch localeSwitch("C");
+
+        auto element = new TiXmlElement("float");
+        element->SetAttribute("value", boost::lexical_cast<std::string>(prop->GetValue()));
         return element;
       }
-      else return nullptr;
+      else
+        return nullptr;
     }
 
-    virtual BaseProperty::Pointer Deserialize(TiXmlElement* element) override
+    virtual BaseProperty::Pointer Deserialize(TiXmlElement *element) override
     {
-      if (!element) return nullptr;
+      if (!element)
+        return nullptr;
 
-      float f;
-      if ( element->QueryFloatAttribute( "value", &f ) == TIXML_SUCCESS )
+      LocaleSwitch localeSwitch("C");
+
+      std::string f_string;
+      if (element->QueryStringAttribute("value", &f_string) == TIXML_SUCCESS)
       {
-        return FloatProperty::New(f).GetPointer();
+        try
+        {
+          return FloatProperty::New(boost::lexical_cast<float>(f_string)).GetPointer();
+        }
+        catch (boost::bad_lexical_cast &e)
+        {
+          MITK_ERROR << "Could not parse string as number: " << e.what();
+          return nullptr;
+        }
       }
       else
       {
@@ -59,10 +72,9 @@ class FloatPropertySerializer : public BasePropertySerializer
     }
 
   protected:
-
     FloatPropertySerializer() {}
     virtual ~FloatPropertySerializer() {}
-};
+  };
 
 } // namespace
 
@@ -70,4 +82,3 @@ class FloatPropertySerializer : public BasePropertySerializer
 MITK_REGISTER_SERIALIZER(FloatPropertySerializer);
 
 #endif
-

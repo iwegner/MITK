@@ -18,24 +18,21 @@
 
 mitk::DICOMGDCMImageFrameInfo
 ::DICOMGDCMImageFrameInfo(const std::string& filename, unsigned int frameNo)
-:itk::LightObject()
-,m_FrameInfo( DICOMImageFrameInfo::New(filename, frameNo) )
+:DICOMDatasetAccessingImageFrameInfo(filename, frameNo)
 ,m_TagForValue()
 {
 }
 
 mitk::DICOMGDCMImageFrameInfo
-::DICOMGDCMImageFrameInfo(DICOMImageFrameInfo::Pointer frameinfo)
-:itk::LightObject()
-,m_FrameInfo(frameinfo)
+::DICOMGDCMImageFrameInfo(const DICOMImageFrameInfo::Pointer& frameinfo)
+:DICOMDatasetAccessingImageFrameInfo(frameinfo->Filename, frameinfo->FrameNo)
 ,m_TagForValue()
 {
 }
 
 mitk::DICOMGDCMImageFrameInfo
-::DICOMGDCMImageFrameInfo(DICOMImageFrameInfo::Pointer frameinfo, gdcm::Scanner::TagToValue const& tagToValueMapping)
-:itk::LightObject()
-,m_FrameInfo(frameinfo)
+::DICOMGDCMImageFrameInfo(const DICOMImageFrameInfo::Pointer& frameinfo, gdcm::Scanner::TagToValue const& tagToValueMapping)
+:DICOMDatasetAccessingImageFrameInfo(frameinfo->Filename, frameinfo->FrameNo)
 ,m_TagForValue(tagToValueMapping)
 {
 }
@@ -45,29 +42,32 @@ mitk::DICOMGDCMImageFrameInfo::
 {
 }
 
-std::string
+mitk::DICOMDatasetFinding
 mitk::DICOMGDCMImageFrameInfo
 ::GetTagValueAsString(const DICOMTag& tag) const
 {
-  auto mappedValue = m_TagForValue.find( gdcm::Tag(tag.GetGroup(), tag.GetElement()) );
+  const auto mappedValue = m_TagForValue.find( gdcm::Tag(tag.GetGroup(), tag.GetElement()) );
+  DICOMDatasetFinding result;
 
-  if (mappedValue != m_TagForValue.end())
+  if (mappedValue != m_TagForValue.cend())
   {
+    result.isValid = true;
+
     if (mappedValue->second != nullptr)
     {
       std::string s(mappedValue->second);
       try
       {
-        return s.erase(s.find_last_not_of(" \n\r\t")+1);
+        result.value = s.erase(s.find_last_not_of(" \n\r\t")+1);
       }
       catch(...)
       {
-        return s;
+        result.value = s;
       }
     }
     else
     {
-      return std::string("");
+      result.value = "";
     }
   }
   else
@@ -77,43 +77,37 @@ mitk::DICOMGDCMImageFrameInfo
 
     if (tag == tagImagePositionPatient)
     {
-      return std::string("0\\0\\0");
+      result.isValid = true;
+      result.value = std::string("0\\0\\0");
     }
     else if (tag == tagImageOrientation)
     {
-      return std::string("1\\0\\0\\0\\1\\0");
+      result.isValid = true;
+      result.value = std::string("1\\0\\0\\0\\1\\0");
     }
     else
     {
-      return std::string("");
+      result.isValid = false;
+      result.value = "";
     }
   }
+  return result;
+}
+
+mitk::DICOMDatasetAccess::FindingsListType
+mitk::DICOMGDCMImageFrameInfo::GetTagValueAsString(const DICOMTagPath& path) const
+{
+  FindingsListType result;
+  if (path.Size() == 1 && path.IsExplicit())
+  {
+    result.push_back(this->GetTagValueAsString(path.GetFirstNode().tag));
+  }
+  return result;
 }
 
 std::string
 mitk::DICOMGDCMImageFrameInfo
 ::GetFilenameIfAvailable() const
 {
-  if (m_FrameInfo.IsNotNull())
-  {
-    return m_FrameInfo->Filename;
-  }
-  else
-  {
-    return std::string("");
-  }
-}
-
-mitk::DICOMImageFrameInfo::Pointer
-mitk::DICOMGDCMImageFrameInfo
-::GetFrameInfo() const
-{
-  return m_FrameInfo;
-}
-
-void
-  mitk::DICOMGDCMImageFrameInfo
-::SetFrameInfo(DICOMImageFrameInfo::Pointer frameinfo)
-{
-  m_FrameInfo = frameinfo;
+  return this->Filename;
 }

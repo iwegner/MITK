@@ -20,52 +20,62 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "mitkBasePropertySerializer.h"
 
 #include "mitkAnnotationProperty.h"
+#include "mitkStringsToNumbers.h"
 
 namespace mitk
 {
-
-class AnnotationPropertySerializer : public BasePropertySerializer
-{
+  class AnnotationPropertySerializer : public BasePropertySerializer
+  {
   public:
+    mitkClassMacro(AnnotationPropertySerializer, BasePropertySerializer);
+    itkFactorylessNewMacro(Self) itkCloneMacro(Self)
 
-    mitkClassMacro( AnnotationPropertySerializer, BasePropertySerializer );
-    itkFactorylessNewMacro(Self)
-    itkCloneMacro(Self)
-
-    virtual TiXmlElement* Serialize() override
+      virtual TiXmlElement *Serialize() override
     {
-      if (const AnnotationProperty* prop = dynamic_cast<const AnnotationProperty*>(m_Property.GetPointer()))
+      if (const AnnotationProperty *prop = dynamic_cast<const AnnotationProperty *>(m_Property.GetPointer()))
       {
-        auto  element = new TiXmlElement("annotation");
+        auto element = new TiXmlElement("annotation");
         element->SetAttribute("label", prop->GetLabel());
         Point3D point = prop->GetPosition();
-        element->SetDoubleAttribute("x", point[0]);
-        element->SetDoubleAttribute("y", point[1]);
-        element->SetDoubleAttribute("z", point[2]);
+        element->SetAttribute("x", boost::lexical_cast<std::string>(point[0]));
+        element->SetAttribute("y", boost::lexical_cast<std::string>(point[1]));
+        element->SetAttribute("z", boost::lexical_cast<std::string>(point[2]));
         return element;
       }
-      else return nullptr;
+      else
+        return nullptr;
     }
 
-    virtual BaseProperty::Pointer Deserialize(TiXmlElement* element) override
+    virtual BaseProperty::Pointer Deserialize(TiXmlElement *element) override
     {
-      if (!element) return nullptr;
-      const char* label( element->Attribute("label") );
+      if (!element)
+        return nullptr;
+      const char *label(element->Attribute("label"));
+      std::string p_string[3];
+      if (element->QueryStringAttribute("x", &p_string[0]) != TIXML_SUCCESS)
+        return nullptr;
+      if (element->QueryStringAttribute("y", &p_string[1]) != TIXML_SUCCESS)
+        return nullptr;
+      if (element->QueryStringAttribute("z", &p_string[2]) != TIXML_SUCCESS)
+        return nullptr;
       Point3D p;
-      if ( element->QueryDoubleAttribute( "x", &p[0] ) != TIXML_SUCCESS )
+      try
+      {
+        StringsToNumbers<double>(3, p_string, p);
+      }
+      catch (boost::bad_lexical_cast &e)
+      {
+        MITK_ERROR << "Could not parse string as number: " << e.what();
         return nullptr;
-      if ( element->QueryDoubleAttribute( "y", &p[1] ) != TIXML_SUCCESS )
-        return nullptr;
-      if ( element->QueryDoubleAttribute( "z", &p[2] ) != TIXML_SUCCESS )
-        return nullptr;
+      }
+
       return AnnotationProperty::New(label, p).GetPointer();
     }
 
   protected:
-
     AnnotationPropertySerializer() {}
     virtual ~AnnotationPropertySerializer() {}
-};
+  };
 
 } // namespace
 
@@ -73,4 +83,3 @@ class AnnotationPropertySerializer : public BasePropertySerializer
 MITK_REGISTER_SERIALIZER(AnnotationPropertySerializer);
 
 #endif
-

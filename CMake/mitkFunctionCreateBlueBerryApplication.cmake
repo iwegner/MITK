@@ -89,7 +89,7 @@ if(_APP_SHOW_CONSOLE)
 else()
   add_executable(${_APP_NAME} MACOSX_BUNDLE WIN32 ${_APP_SOURCES} ${WINDOWS_ICON_RESOURCE_FILE})
 endif()
-mitk_use_modules(TARGET ${_APP_NAME} MODULES mbilog PACKAGES Poco Qt4|QtCore Qt5|Core)
+mitk_use_modules(TARGET ${_APP_NAME} MODULES mbilog PACKAGES Poco Qt5|Core)
 
 set_target_properties(${_APP_NAME} PROPERTIES
                       COMPILE_FLAGS "${_app_compile_flags}")
@@ -159,7 +159,9 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_APP_NAME}.ini")
                  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${_APP_NAME}.ini)
 endif()
 
-# Create batch files for Windows platforms
+# Create batch and VS user files for Windows platforms
+include(mitkFunctionCreateWindowsBatchScript)
+
 if(WIN32)
   set(template_name "start${_APP_NAME}.bat.in")
   if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${template_name}")
@@ -169,6 +171,9 @@ if(WIN32)
         ${BUILD_TYPE})
     endforeach()
   endif()
+  mitkFunctionConfigureVisualStudioUserProjectFile(
+    NAME ${_APP_NAME}
+  )
 endif(WIN32)
 
 # -----------------------------------------------------------------------

@@ -40,10 +40,10 @@ string(REPLACE " " "%20" _build_name_escaped "${CTEST_BUILD_NAME}")
 # Check if "mbits" is reachable
 file(DOWNLOAD "http://mbits" "${CTEST_SCRIPT_DIRECTORY}/mbits.html" TIMEOUT 2 STATUS _status)
 list(GET _status 0 _status_code)
-if(_status_code EQUAL 6) # couldn't resovle host name
-  set(MBITS_AVAILABLE 0)
-else()
+if(_status_code EQUAL 0) # successful completion
   set(MBITS_AVAILABLE 1)
+else()
+  set(MBITS_AVAILABLE 0)
 endif()
 
 #
@@ -52,11 +52,6 @@ endif()
 if(NOT CDASH_ADMIN_URL_PREFIX AND MBITS_AVAILABLE)
   set(CDASH_ADMIN_URL_PREFIX "http://mbits")
 endif()
-
-if(NOT MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL AND MBITS_AVAILABLE)
-  set(MITK_THIRDPARTY_DOWNLOAD_PREFIX_URL "http://mbits/dl-cache")
-endif()
-
 
 if(NOT DEFINED GIT_BRANCH OR GIT_BRANCH STREQUAL "")
   set(GIT_BRANCH "")

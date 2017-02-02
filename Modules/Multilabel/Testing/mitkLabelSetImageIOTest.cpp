@@ -16,7 +16,6 @@ See LICENSE.txt or http://www.mitk.org for details.
 
 #include <mitkIOUtil.h>
 #include <mitkLabelSetImage.h>
-#include <mitkLabelSetImageIO.h>
 
 #include <mitkTestFixture.h>
 #include <mitkTestingMacros.h>
@@ -26,29 +25,39 @@ std::string pathToImage;
 class mitkLabelSetImageIOTestSuite : public mitk::TestFixture
 {
   CPPUNIT_TEST_SUITE(mitkLabelSetImageIOTestSuite);
-  MITK_TEST(TestGetWriteConfidenceLevel);
-  MITK_TEST(TestWriteLabelSetImage);
-  MITK_TEST(TestGetReadConfidenceLevel);
-  MITK_TEST(TestReadLabelSetImage);
+  MITK_TEST(TestReadWrite3DLabelSetImage);
+  MITK_TEST(TestReadWrite3DplusTLabelSetImage);
   CPPUNIT_TEST_SUITE_END();
 
 private:
   mitk::Image::Pointer regularImage;
   mitk::LabelSetImage::Pointer multilabelImage;
-  mitk::LabelSetImageIO* lsetIO;
 
 public:
-
   void setUp() override
   {
     regularImage = mitk::Image::New();
-    unsigned int dimensions[3] = {256,256,312};
+  }
+
+  void tearDown() override
+  {
+    regularImage = 0;
+    multilabelImage = 0;
+  }
+
+  void TestReadWrite3DLabelSetImage()
+  {
+    unsigned int dimensions[3] = {256, 256, 312};
     regularImage->Initialize(mitk::MakeScalarPixelType<int>(), 3, dimensions);
 
     multilabelImage = mitk::LabelSetImage::New();
     multilabelImage->Initialize(regularImage);
     mitk::LabelSet::Pointer newlayer = mitk::LabelSet::New();
     newlayer->SetLayer(1);
+    mitk::Label::Pointer label0 = mitk::Label::New();
+    label0->SetName("Background");
+    label0->SetValue(0);
+
     mitk::Label::Pointer label1 = mitk::Label::New();
     label1->SetName("Label1");
     label1->SetValue(1);
@@ -57,64 +66,73 @@ public:
     label2->SetName("Label2");
     label2->SetValue(200);
 
+    newlayer->AddLabel(label0);
     newlayer->AddLabel(label1);
     newlayer->AddLabel(label2);
     newlayer->SetActiveLabel(200);
-    // TODO assert that the layer od labelset and labels is correct - TEST
 
     multilabelImage->AddLayer(newlayer);
 
-    lsetIO = new mitk::LabelSetImageIO();
-  }
-
-  void tearDown() override
-  {
-    regularImage = 0;
-    multilabelImage = 0;
-    delete lsetIO;
-  }
-
-  void TestGetWriteConfidenceLevel()
-  {
-    dynamic_cast<mitk::IFileWriter*>(lsetIO)->SetInput(regularImage);
-    CPPUNIT_ASSERT_MESSAGE("LabelSetImageIO returned wrong writer confidence level", lsetIO->GetWriterConfidenceLevel() == mitk::IFileIO::Unsupported);
-
-    dynamic_cast<mitk::IFileWriter*>(lsetIO)->SetInput(multilabelImage);
-    CPPUNIT_ASSERT_MESSAGE("LabelSetImageIO returned wrong writer confidence level", lsetIO->GetWriterConfidenceLevel() == mitk::IFileIO::Supported);
-  }
-
-  void TestWriteLabelSetImage()
-  {
     pathToImage = mitk::IOUtil::CreateTemporaryDirectory();
-    pathToImage.append("/LabelSetTestImage.nrrd");
+    pathToImage.append("/LabelSetTestImage3D.nrrd");
 
-    dynamic_cast<mitk::IFileWriter*>(lsetIO)->SetInput(multilabelImage);
-    dynamic_cast<mitk::IFileWriter*>(lsetIO)->SetOutputLocation(pathToImage);
-    dynamic_cast<mitk::IFileWriter*>(lsetIO)->Write();
-  }
+    mitk::IOUtil::Save(multilabelImage, pathToImage);
 
-  void TestGetReadConfidenceLevel()
-  {
-    dynamic_cast<mitk::IFileReader*>(lsetIO)->SetInput(GetTestDataFilePath("Pic3D.nrrd"));
-    CPPUNIT_ASSERT_MESSAGE("LabelSetImageIO returned wrong reader confidence level", lsetIO->GetReaderConfidenceLevel() == mitk::IFileIO::Unsupported);
-
-    std::string path = GetTestDataFilePath("Multilabel/Pic3DAsMultilabelImage.nrrd");
-    dynamic_cast<mitk::IFileReader*>(lsetIO)->SetInput(path);
-    CPPUNIT_ASSERT_MESSAGE("LabelSetImageIO returned wrong reader confidence level", lsetIO->GetReaderConfidenceLevel() == mitk::IFileIO::Supported);
-  }
-
-  void TestReadLabelSetImage()
-  {
-    dynamic_cast<mitk::IFileReader*>(lsetIO)->SetInput(pathToImage);
-    std::vector<mitk::BaseData::Pointer> data = dynamic_cast<mitk::IFileReader*>(lsetIO)->Read();
-    CPPUNIT_ASSERT_MESSAGE("Too many images have been read", data.size() == 1);
-    mitk::LabelSetImage::Pointer loadedImage = dynamic_cast<mitk::LabelSetImage*>(data.at(0).GetPointer());
+    mitk::LabelSetImage::Pointer loadedImage =
+      dynamic_cast<mitk::LabelSetImage *>(mitk::IOUtil::LoadBaseData(pathToImage).GetPointer());
 
     // This information is currently not serialized but also checked within the Equals function
     loadedImage->SetActiveLayer(multilabelImage->GetActiveLayer());
 
     CPPUNIT_ASSERT_MESSAGE("Error reading label set image", loadedImage.IsNotNull());
     CPPUNIT_ASSERT_MESSAGE("Error reading label set image", mitk::Equal(*multilabelImage, *loadedImage, 0.0001, true));
+
+    itksys::SystemTools::RemoveFile(pathToImage);
+  }
+
+  void TestReadWrite3DplusTLabelSetImage()
+  {
+    unsigned int dimensions[4] = {256, 256, 312, 10};
+    regularImage->Initialize(mitk::MakeScalarPixelType<int>(), 4, dimensions);
+
+    multilabelImage = mitk::LabelSetImage::New();
+    multilabelImage->Initialize(regularImage);
+    mitk::LabelSet::Pointer newlayer = mitk::LabelSet::New();
+    newlayer->SetLayer(1);
+    mitk::Label::Pointer label0 = mitk::Label::New();
+    label0->SetName("Background");
+    label0->SetValue(0);
+
+    mitk::Label::Pointer label1 = mitk::Label::New();
+    label1->SetName("Label1");
+    label1->SetValue(1);
+
+    mitk::Label::Pointer label2 = mitk::Label::New();
+    label2->SetName("Label2");
+    label2->SetValue(200);
+
+    newlayer->AddLabel(label0);
+    newlayer->AddLabel(label1);
+    newlayer->AddLabel(label2);
+    newlayer->SetActiveLabel(200);
+
+    multilabelImage->AddLayer(newlayer);
+
+    pathToImage = mitk::IOUtil::CreateTemporaryDirectory();
+    pathToImage.append("/LabelSetTestImage3DplusT.nrrd");
+
+    mitk::IOUtil::Save(multilabelImage, pathToImage);
+
+    mitk::LabelSetImage::Pointer loadedImage =
+      dynamic_cast<mitk::LabelSetImage *>(mitk::IOUtil::LoadBaseData(pathToImage).GetPointer());
+
+    // This information is currently not serialized but also checked within the Equals function
+    loadedImage->SetActiveLayer(multilabelImage->GetActiveLayer());
+
+    CPPUNIT_ASSERT_MESSAGE("Error reading label set image", loadedImage.IsNotNull());
+    CPPUNIT_ASSERT_MESSAGE("Error reading label set image", mitk::Equal(*multilabelImage, *loadedImage, 0.0001, true));
+
+    itksys::SystemTools::RemoveFile(pathToImage);
   }
 };
 
