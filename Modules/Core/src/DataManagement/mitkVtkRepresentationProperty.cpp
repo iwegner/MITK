@@ -74,6 +74,7 @@ void mitk::VtkRepresentationProperty::AddRepresentationTypes()
   AddEnum("Points", static_cast<IdType>(VTK_POINTS));
   AddEnum("Wireframe", static_cast<IdType>(VTK_WIREFRAME));
   AddEnum("Surface", static_cast<IdType>(VTK_SURFACE));
+  AddEnum("Surface w. Wireframe", static_cast<IdType>(VTK_SURFACE+1));
 }
 
 bool mitk::VtkRepresentationProperty::AddEnum(const std::string &name, const IdType &id)
