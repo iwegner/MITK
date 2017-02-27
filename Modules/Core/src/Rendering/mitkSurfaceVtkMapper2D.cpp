@@ -286,6 +286,7 @@ void mitk::SurfaceVtkMapper2D::ApplyAllProperties(mitk::BaseRenderer* renderer)
   }
 
   FixupLegacyProperties(node->GetPropertyList(renderer));
+  FixupLegacyProperties(node->GetPropertyList());
 
   float lineWidth = 1.0f;
   node->GetFloatProperty("line width", lineWidth, renderer);
