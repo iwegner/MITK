@@ -44,6 +44,29 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include "iconLeaveFullScreen.xpm"
 
 #include <math.h>
+#include <assert.h>
+
+namespace {
+
+
+//! Return whether (all) crosshair data nodes are visible in specified renderer
+bool IsCrosshairVisible(QmitkStdMultiWidget& multiWidget, const mitk::BaseRenderer& renderer)
+{
+    bool crosshairVisible = true;
+
+    // Unusual numbering, starts at 1!
+    for (int planeId = 1; planeId <= 3; ++planeId) {
+      mitk::DataNode* planeNode = multiWidget.GetWidgetPlane(planeId);
+      if (planeNode != nullptr) {
+        crosshairVisible &= planeNode->IsVisible(&renderer);
+      }
+    }
+
+    return crosshairVisible;
+}
+
+} // unnamed namespace
+
 
 #ifdef QMITK_USE_EXTERNAL_RENDERWINDOW_MENU
 QmitkRenderWindowMenu::QmitkRenderWindowMenu(QWidget *parent,
@@ -770,22 +793,26 @@ void QmitkRenderWindowMenu::OnCrosshairRotationModeSelected(QAction *action)
   emit ChangeCrosshairRotationMode(action->data().toInt());
 }
 
-void QmitkRenderWindowMenu::SetCrossHairVisibility(bool state)
+void QmitkRenderWindowMenu::SetCrossHairVisibility(bool visible)
 {
-  if (m_Renderer.IsNotNull())
-  {
-    mitk::DataNode *n;
-    if (this->m_MultiWidget)
-    {
-      n = this->m_MultiWidget->GetWidgetPlane1();
-      if (n)
-        n->SetVisibility(state);
-      n = this->m_MultiWidget->GetWidgetPlane2();
-      if (n)
-        n->SetVisibility(state);
-      n = this->m_MultiWidget->GetWidgetPlane3();
-      if (n)
-        n->SetVisibility(state);
+  assert(m_MultiWidget);
+  assert(m_Renderer);
+
+  // Unusual numbering, starts at 1!
+  for (int planeId = 1; planeId <= 3; ++planeId) {
+    mitk::DataNode* planeNode = m_MultiWidget->GetWidgetPlane(planeId);
+    if (planeNode != nullptr) {
+      if (m_Renderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
+      {
+        // 2D case: modify default visibility
+        planeNode->SetVisibility(visible);
+      }
+      else
+      {
+        // 3D case: modify _only_ our renderer specific property
+        planeNode->SetVisibility(visible, m_Renderer);
+      }
+      planeNode->Modified();
       m_Renderer->GetRenderingManager()->RequestUpdateAll();
     }
   }
@@ -832,49 +859,29 @@ void QmitkRenderWindowMenu::OnCrossHairMenuAboutToShow()
   crosshairModesMenu->addAction(resetViewAction);
   connect(resetViewAction, SIGNAL(triggered()), this, SIGNAL(ResetView()));
 
-  // Show hide crosshairs
+  // "Show/hide crosshair" menu
   {
-    bool currentState = true;
+    assert(m_MultiWidget);
+    assert(m_Renderer);
+    bool crosshairVisible = IsCrosshairVisible(*m_MultiWidget, *m_Renderer);
 
-    if (m_Renderer.IsNotNull())
+    QAction *showCrosshairAction = new QAction(crosshairModesMenu);
+    if (m_Renderer->GetMapperID() == mitk::BaseRenderer::Standard2D)
     {
-      mitk::DataStorage *ds = m_Renderer->GetDataStorage();
-      mitk::DataNode *n;
-      if (ds)
-      {
-        n = this->m_MultiWidget->GetWidgetPlane1();
-        if (n)
-        {
-          bool v;
-          if (n->GetVisibility(v, 0))
-            currentState &= v;
-        }
-        n = this->m_MultiWidget->GetWidgetPlane2();
-        if (n)
-        {
-          bool v;
-          if (n->GetVisibility(v, 0))
-            currentState &= v;
-        }
-        n = this->m_MultiWidget->GetWidgetPlane3();
-        if (n)
-        {
-          bool v;
-          if (n->GetVisibility(v, 0))
-            currentState &= v;
-        }
-      }
+      showCrosshairAction->setText("Show crosshair in 2D");
+    }
+    else
+    {
+      showCrosshairAction->setText("Show crosshair in 3D");
     }
 
-    QAction *showHideCrosshairVisibilityAction = new QAction(crosshairModesMenu);
-    showHideCrosshairVisibilityAction->setText("Show crosshair");
-    showHideCrosshairVisibilityAction->setCheckable(true);
-    showHideCrosshairVisibilityAction->setChecked(currentState);
-    crosshairModesMenu->addAction(showHideCrosshairVisibilityAction);
-    connect(showHideCrosshairVisibilityAction, SIGNAL(toggled(bool)), this, SLOT(SetCrossHairVisibility(bool)));
+    showCrosshairAction->setCheckable(true);
+    showCrosshairAction->setChecked(crosshairVisible);
+    crosshairModesMenu->addAction(showCrosshairAction);
+    connect(showCrosshairAction, SIGNAL(toggled(bool)), this, SLOT(SetCrossHairVisibility(bool)));
   }
 
-  // Rotation mode
+  // Rotation mode menu
   {
     QAction *rotationGroupSeparator = new QAction(crosshairModesMenu);
     rotationGroupSeparator->setSeparator(true);
