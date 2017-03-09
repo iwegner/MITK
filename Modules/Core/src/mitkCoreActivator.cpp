@@ -32,7 +32,7 @@ See LICENSE.txt or http://www.mitk.org for details.
 #include <mitkSurfaceVtkLegacyIO.h>
 #include <mitkSurfaceVtkXmlIO.h>
 
-#include "mitkDicomSeriesReaderService.h"
+//#include "mitkDicomSeriesReaderService.h"
 #include "mitkLegacyFileWriterService.h"
 #include <mitkFileWriter.h>
 
@@ -307,7 +307,7 @@ void MitkCoreActivator::Load(us::ModuleContext *context)
   m_FileWriters.push_back(new mitk::PointSetWriterService());
   m_FileReaders.push_back(new mitk::GeometryDataReaderService());
   m_FileWriters.push_back(new mitk::GeometryDataWriterService());
-  m_FileReaders.push_back(new mitk::DicomSeriesReaderService());
+  //m_FileReaders.push_back(new mitk::DicomSeriesReaderService());
   m_FileReaders.push_back(new mitk::RawImageFileReaderService());
 
   m_ShaderRepositoryTracker->Open();

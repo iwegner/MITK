@@ -14,8 +14,8 @@ set(mitk_modules
   AlgorithmsExt
   MapperExt
   DICOMReader
-  DICOMReaderServices
-  DICOMTesting
+  #DICOMReaderServices # deactivated in order to not have competing DICOM readers
+  #DICOMTesting
   SceneSerializationBase
   PlanarFigure
   ImageDenoising
