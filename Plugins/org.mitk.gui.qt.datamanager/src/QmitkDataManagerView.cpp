@@ -258,7 +258,7 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
   m_GizmoToggleAction = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/ToggleGizmoNode_48.png"),
                                     "Direct manipulation", this);
   m_GizmoToggleAction->setCheckable(true);
-  surfaceDataNodeDescriptor->AddAction(m_GizmoToggleAction, false);
+  unknownDataNodeDescriptor->AddAction(m_GizmoToggleAction, false);
 
   QObject::connect( m_GizmoToggleAction, SIGNAL( changed() ),
                     this, SLOT( ToggleGizmoOnSelectedNodeChanged() ) );
