@@ -360,7 +360,7 @@ mitk::Color QmitkStdMultiWidget::GetDecorationColor(unsigned int widgetNumber)
           return dynamic_cast<mitk::ColorProperty *>(m_PlaneNode1->GetProperty("color"))->GetColor();
         }
       }
-      float red[3] = {0.753f, 0.0f, 0.0f}; // This is #C00000 in hex
+      float red[3] = {1.0f, 0.39f, 0.27f}; // This is #FF6347 in hex
       return mitk::Color(red);
     }
     case 1:
@@ -372,7 +372,7 @@ mitk::Color QmitkStdMultiWidget::GetDecorationColor(unsigned int widgetNumber)
           return dynamic_cast<mitk::ColorProperty *>(m_PlaneNode2->GetProperty("color"))->GetColor();
         }
       }
-      float green[3] = {0.0f, 0.69f, 0.0f}; // This is #00B000 in hex
+      float green[3] = {0.2f, 0.8f, 0.2f}; // This is #32CD32 in hex
       return mitk::Color(green);
     }
     case 2:
@@ -384,7 +384,7 @@ mitk::Color QmitkStdMultiWidget::GetDecorationColor(unsigned int widgetNumber)
           return dynamic_cast<mitk::ColorProperty *>(m_PlaneNode3->GetProperty("color"))->GetColor();
         }
       }
-      float blue[3] = {0.0, 0.502f, 1.0f}; // This is #0080FF in hex
+      float blue[3] = {0.0f, 0.75f, 1.0f}; // This is #00BFFF in hex
       return mitk::Color(blue);
     }
     case 3:

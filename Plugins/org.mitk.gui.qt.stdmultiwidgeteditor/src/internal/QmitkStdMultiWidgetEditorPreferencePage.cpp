@@ -129,9 +129,9 @@ void QmitkStdMultiWidgetEditorPreferencePage::Update()
   m_WidgetBackgroundColor2[3] = m_Preferences->Get("widget4 second background color", "#7F7F7F");
 
   //decoration colors
-  m_WidgetDecorationColor[0] = m_Preferences->Get("widget1 decoration color", "#FF0000");
-  m_WidgetDecorationColor[1] = m_Preferences->Get("widget2 decoration color", "#00FF00");
-  m_WidgetDecorationColor[2] = m_Preferences->Get("widget3 decoration color", "#0000FF");
+  m_WidgetDecorationColor[0] = m_Preferences->Get("widget1 decoration color", "#FF6347");
+  m_WidgetDecorationColor[1] = m_Preferences->Get("widget2 decoration color", "#32CD32");
+  m_WidgetDecorationColor[2] = m_Preferences->Get("widget3 decoration color", "#00BFFF");
   m_WidgetDecorationColor[3] = m_Preferences->Get("widget4 decoration color", "#FFFF00");
 
   //annotation text
