@@ -73,10 +73,10 @@ QWidget* QmitkDataManagerPreferencePage::GetQtControl() const
 
 bool QmitkDataManagerPreferencePage::PerformOk()
 {
-  m_DataManagerPreferencesNode->PutBool("Single click property editing"
-                                        , m_EnableSingleEditing->isChecked());
-  m_DataManagerPreferencesNode->PutBool("Place new nodes on top"
-                                        , m_PlaceNewNodesOnTop->isChecked());
+  //m_DataManagerPreferencesNode->PutBool("Single click property editing"
+  //                                      , m_EnableSingleEditing->isChecked());
+  //m_DataManagerPreferencesNode->PutBool("Place new nodes on top"
+  //                                      , m_PlaceNewNodesOnTop->isChecked());
   m_DataManagerPreferencesNode->PutBool("Show helper objects"
                                         , m_ShowHelperObjects->isChecked());
   m_DataManagerPreferencesNode->PutBool("Show nodes containing no data"
