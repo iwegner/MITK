@@ -58,3 +58,24 @@ index e39bd30..68c5980 100644
      AND HAVE_GCC_VISIBILITY AND VTK_USE_GCC_VISIBILITY
      AND NOT MINGW AND NOT CYGWIN)
      # Should only be set if GCC is newer than 4.2.0
+diff --git a/Rendering/OpenGL/vtkOpenGLRenderer.cxx b/Rendering/OpenGL/vtkOpenGLRenderer.cxx
+index 47463cc..41a4be6 100644
+--- a/Rendering/OpenGL/vtkOpenGLRenderer.cxx
++++ b/Rendering/OpenGL/vtkOpenGLRenderer.cxx
+@@ -1174,7 +1174,7 @@
+
+         glBegin(GL_QUADS);
+         glColor4d(this->Background[0],this->Background[1],this->Background[2],
+-                  0.0);
++                  1.0); // DMA 2017-05-05: see l. 1177 Cannot get background rendered in Qml applicaiton when alpha==0
+         glTexCoord2f(0.0, 0.0);
+         glVertex2f(0.0, 0.0);
+
+@@ -1183,7 +1183,7 @@
+
+         //bottom vertices
+         glColor4d(this->Background2[0],this->Background2[1],
+-                  this->Background2[2],0.0);
++                  this->Background2[2],1.0); // see l. 1177
+         glTexCoord2f(1.0, 1.0);
+         glVertex2f(1.0, 1.0);
