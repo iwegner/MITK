@@ -116,7 +116,12 @@ TiXmlElement *mitk::PropertyListSerializer::SerializeOneProperty(const std::stri
     itk::ObjectFactoryBase::CreateAllInstance(serializername.c_str());
   if (allSerializers.size() < 1)
   {
-    MITK_ERROR << "No serializer found for " << property->GetNameOfClass() << ". Skipping object";
+    // Do not warn for SmartPointerProperty. This limitation should be known.
+    // The application should find ways to handle this
+    if (std::string(property->GetNameOfClass()) != "SmartPointerProperty")
+    {
+      MITK_ERROR << "No serializer found for " << property->GetNameOfClass() << ". Skipping object";
+    }
   }
   if (allSerializers.size() > 1)
   {
