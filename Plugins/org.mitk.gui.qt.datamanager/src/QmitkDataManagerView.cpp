@@ -549,12 +549,12 @@ void QmitkDataManagerView::CreateQtPartControl(QWidget* parent)
       m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(diffusionImageDataNodeDescriptor, m_ColormapAction));
   }
 
-  m_SurfaceRepresentation = new QAction(tr("Surface Representation"), this);
-  m_SurfaceRepresentation->setMenu(new QMenu(m_NodeTreeView));
-  QObject::connect( m_SurfaceRepresentation->menu(), SIGNAL( aboutToShow() )
-    , this, SLOT( SurfaceRepresentationMenuAboutToShow() ) );
-  surfaceDataNodeDescriptor->AddAction(m_SurfaceRepresentation, false);
-  m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(surfaceDataNodeDescriptor, m_SurfaceRepresentation));
+  //m_SurfaceRepresentation = new QAction(tr("Surface Representation"), this);
+  //m_SurfaceRepresentation->setMenu(new QMenu(m_NodeTreeView));
+  //QObject::connect( m_SurfaceRepresentation->menu(), SIGNAL( aboutToShow() )
+  //  , this, SLOT( SurfaceRepresentationMenuAboutToShow() ) );
+  //surfaceDataNodeDescriptor->AddAction(m_SurfaceRepresentation, false);
+  //m_DescriptorActionList.push_back(std::pair<QmitkNodeDescriptor*, QAction*>(surfaceDataNodeDescriptor, m_SurfaceRepresentation));
 
   QAction* showOnlySelectedNodes
     = new QAction(QIcon(":/org.mitk.gui.qt.datamanager/ShowSelectedNode_48.png")
@@ -909,6 +909,9 @@ void QmitkDataManagerView::ColormapMenuAboutToShow()
 
 void QmitkDataManagerView::SurfaceRepresentationMenuAboutToShow()
 {
+  // DMA: Deactivated as available in application toolbar
+  return;
+
   mitk::DataNode* node = m_NodeTreeModel->GetNode(m_FilterModel->mapToSource(m_NodeTreeView->selectionModel()->currentIndex()));
   if(!node)
     return;
