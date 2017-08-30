@@ -322,10 +322,10 @@ void mitk::Material::InitializeStandardValues()
   m_Color.Set(0.5, 0.5, 0.0);
   m_ColorCoefficient = 0.5;
   m_SpecularColor.Set(1.0, 1.0, 1.0);
-  m_SpecularCoefficient = 0.5;
-  m_SpecularPower = 10.0;
+  m_SpecularCoefficient = 0.2;
+  m_SpecularPower = 9.0;
   m_Opacity = 1.0;
-  m_Interpolation = Gouraud;
+  m_Interpolation = Phong;
   m_Representation = Surface;
   m_LineWidth = 1.0;
   m_Name = "";

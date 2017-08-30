@@ -503,8 +503,8 @@ void mitk::SurfaceVtkMapper3D::SetDefaultPropertiesForVtkProperty(mitk::DataNode
 
     node->AddProperty("material.ambientCoefficient", mitk::FloatProperty::New(0.05f), renderer, overwrite);
     node->AddProperty("material.diffuseCoefficient", mitk::FloatProperty::New(0.9f), renderer, overwrite);
-    node->AddProperty("material.specularCoefficient", mitk::FloatProperty::New(1.0f), renderer, overwrite);
-    node->AddProperty("material.specularPower", mitk::FloatProperty::New(16.0f), renderer, overwrite);
+    node->AddProperty("material.specularCoefficient", mitk::FloatProperty::New(0.2f), renderer, overwrite);
+    node->AddProperty("material.specularPower", mitk::FloatProperty::New(9.0f), renderer, overwrite);
 
     node->AddProperty("material.representation", mitk::VtkRepresentationProperty::New(), renderer, overwrite);
     node->AddProperty("material.interpolation", mitk::VtkInterpolationProperty::New(), renderer, overwrite);
@@ -523,7 +523,7 @@ void mitk::SurfaceVtkMapper3D::SetDefaultPropertiesForVtkProperty(mitk::DataNode
 
 void mitk::SurfaceVtkMapper3D::SetDefaultProperties(mitk::DataNode *node, mitk::BaseRenderer *renderer, bool overwrite)
 {
-  node->AddProperty("color", mitk::ColorProperty::New(1.0f, 1.0f, 1.0f), renderer, overwrite);
+  node->AddProperty("color", mitk::ColorProperty::New(1.0f, 0.94f, 0.71f), renderer, overwrite); // boneish
   node->AddProperty("opacity", mitk::FloatProperty::New(1.0), renderer, overwrite);
 
   mitk::SurfaceVtkMapper3D::SetDefaultPropertiesForVtkProperty(node, renderer, overwrite); // Shading
